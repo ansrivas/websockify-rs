@@ -100,13 +100,15 @@ where
                                 stream.write_all(&data.to_vec()[..]).await?;
                             }
                             Message::Text(data) => {
-                                ws.send(Message::Text(data)).await?;
+                                stream.write_all(&data.as_bytes()[..]).await?;
                             }
                             Message::Ping(data) => {
-                                ws.send(Message::Pong(data)).await?;
+                                stream.write_all(&data.to_vec()[..]).await?;
+
                             }
                             Message::Pong(data) => {
-                                ws.send(Message::Ping(data)).await?;
+                                stream.write_all(&data.to_vec()[..]).await?;
+
                             }
                             Message::Close(data) => {
                                 debug!("{}: Web socket closed {:?}", addr, data);
