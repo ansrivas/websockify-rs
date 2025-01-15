@@ -13,6 +13,7 @@ use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 use tokio::net::TcpStream;
 use tracing::{debug, error, info};
 pub mod error;
+use futures_util::sink::SinkExt;
 
 pub enum Destination {
     Tcp(Vec<SocketAddr>),
@@ -128,7 +129,7 @@ where
             result = stream.read(&mut buffer) => {
                 match result {
                     Ok(n) if n > 0 => {
-                        ws.send(Message::Binary(buffer[..n].to_vec())).await?;
+                        ws.send(Message::Binary(buffer[..n].to_vec().into())).await?;
                     }
                     Ok(_) => {
                         debug!("{}: TCP/Unix stream closed", addr);

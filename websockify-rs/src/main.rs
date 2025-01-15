@@ -110,7 +110,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create the router
     let app = Router::new()
         .nest("/websockify", axum_websockify::create_router(upstream))
-        .route("/static/*file", get(static_handler))
+        .route("/static/{*wildcard}", get(static_handler))
         .route("/index.html", get(index_handler))
         .route("/", get(index_handler))
         .layer(TraceLayer::new_for_http());
