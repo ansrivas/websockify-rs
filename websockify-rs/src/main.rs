@@ -1,6 +1,6 @@
 pub use axum_websockify::error::WebsockifyError;
 
-use axum::{response::IntoResponse, routing::get, Router};
+use axum::{response::{IntoResponse, Redirect}, routing::get, Router};
 use std::net::SocketAddr;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -36,9 +36,7 @@ where
     }
 }
 
-async fn index_handler() -> impl IntoResponse {
-    static_handler("/index.html".parse::<Uri>().unwrap()).await
-}
+ 
 
 async fn static_handler(uri: Uri) -> impl IntoResponse {
     let mut path = uri.path().trim_start_matches('/').to_string();
@@ -111,8 +109,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let app = Router::new()
         .nest("/websockify", axum_websockify::create_router(upstream))
         .route("/static/{*wildcard}", get(static_handler))
-        .route("/index.html", get(index_handler))
-        .route("/", get(index_handler))
+        .route("/index.html", get(|| async { Redirect::permanent("/static/vnc.html") }))
+        .route("/", get(|| async { Redirect::permanent("/static/vnc.html") }))
         .layer(TraceLayer::new_for_http());
 
     let listener = tokio::net::TcpListener::bind(&args.listen).await.unwrap();
