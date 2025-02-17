@@ -89,7 +89,7 @@ async fn handle_connection<S>(
 where
     S: AsyncRead + AsyncWrite + std::marker::Unpin,
 {
-    let mut buffer = vec![0; 10000];
+    let mut buffer = vec![0; 16384];
 
     loop {
         tokio::select! {
@@ -98,17 +98,17 @@ where
                     Some(Ok(message)) => {
                         match message{
                             Message::Binary(data) => {
-                                stream.write_all(&data.to_vec()[..]).await?;
+                                stream.write_all(&data).await?;
                             }
                             Message::Text(data) => {
                                 stream.write_all(&data.as_bytes()[..]).await?;
                             }
                             Message::Ping(data) => {
-                                stream.write_all(&data.to_vec()[..]).await?;
+                                stream.write_all(&data).await?;
 
                             }
                             Message::Pong(data) => {
-                                stream.write_all(&data.to_vec()[..]).await?;
+                                stream.write_all(&data).await?;
 
                             }
                             Message::Close(data) => {
