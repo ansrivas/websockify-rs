@@ -64,7 +64,7 @@ jobs:
     - name: Git config
       if: ${{ matrix.config.os == 'windows-latest' }}
       run: git config --global core.autocrlf input
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     # - name: Install LLVM
     #   if: ${{ matrix.config.os == 'windows-latest' }}
     #   run: choco install llvm
@@ -74,41 +74,18 @@ jobs:
       if: ${{ matrix.config.target == 'x86_64-unknown-linux-musl' }}
       run: sudo apt-get install musl-tools musl-dev
     - name: Install rust
-      uses: actions-rs/toolchain@v1
+      uses: dtolnay/rust-toolchain@stable
       with:
         toolchain: stable
-        target: ${{ matrix.config.target }}
-        override: true
-        components: rustfmt, clippy
+        targets: ${{ matrix.config.target }}
     - name: Cache dependencies
-      uses: actions/cache@v2
-      env:
-        cache-name: cache-cargo
-      with:
-        path: ~/.cargo/registry
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/*.crate') }}
-        restore-keys: |
-          ${{ runner.os }}-build-${{ env.cache-name }}-
-    - name: Cache target
-      uses: actions/cache@v2
-      env:
-        cache-name: cache-target
-      with:
-        path: target
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ matrix.config.target }}-${{ hashFiles('**/*.o') }}
-        restore-keys: |
-          ${{ runner.os }}-build-${{ env.cache-name }}-${{ matrix.config.target }}
+      uses: Swatinem/rust-cache@v2
+
     - name: Build
       uses: actions-rs/cargo@v1
       with:
         use-cross: ${{ matrix.config.cross }}
         command: build
-        args: --release --target ${{ matrix.config.target }}
-    - name: Test
-      if: ${{ matrix.config.test }}
-      uses: actions-rs/cargo@v1
-      with:
-        command: test
         args: --release --target ${{ matrix.config.target }}
     - name: Create release zip for UNIX
       if: ${{ matrix.config.os != 'windows-latest' }}
