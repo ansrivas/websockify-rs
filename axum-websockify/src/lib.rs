@@ -13,16 +13,23 @@ use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 use tokio::net::TcpStream;
 use tracing::{debug, error, info};
 pub mod error;
+pub mod utils;
 use futures_util::sink::SinkExt;
+pub use tokio_wireguard::{Interface as WgInterface, TcpStream as WgTcpStream};
 
 pub enum Destination {
     Tcp(Vec<SocketAddr>),
+    WireGuard {
+        addrs: Vec<SocketAddr>,
+        interface: Arc<WgInterface>,
+    },
 }
 
 impl std::fmt::Display for Destination {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         match self {
             Destination::Tcp(tcp) => write!(f, "{:?}", tcp),
+            Destination::WireGuard { addrs, interface } => write!(f, "{:?} {:?}", addrs, interface),
         }
     }
 }
@@ -30,6 +37,16 @@ impl std::fmt::Display for Destination {
 impl Destination {
     pub fn tcp(addr: impl ToSocketAddrs) -> io::Result<Destination> {
         Ok(Destination::Tcp(addr.to_socket_addrs()?.collect()))
+    }
+
+    pub fn wireguard(
+        addrs: impl ToSocketAddrs,
+        interface: Arc<WgInterface>,
+    ) -> io::Result<Destination> {
+        Ok(Destination::WireGuard {
+            addrs: addrs.to_socket_addrs()?.collect(),
+            interface,
+        })
     }
 
     async fn connect(&self) -> io::Result<NetStream> {
@@ -44,12 +61,28 @@ impl Destination {
                 }
                 Err(last_error.unwrap())
             }
+            Destination::WireGuard { addrs, interface } => {
+                let mut last_error = None;
+                for addr in addrs {
+                    match WgTcpStream::connect(*addr, interface.as_ref()).await {
+                        Ok(stream) => return Ok(NetStream::WireGuard(stream)),
+                        Err(e) => last_error = Some(e),
+                    }
+                }
+                Err(last_error.unwrap_or_else(|| {
+                    io::Error::new(
+                        io::ErrorKind::AddrNotAvailable,
+                        "No addresses to connect to",
+                    )
+                }))
+            }
         }
     }
 }
 
 enum NetStream {
     Tcp(TcpStream),
+    WireGuard(WgTcpStream),
 }
 
 pub fn create_router(dest: Destination) -> Router {
@@ -71,6 +104,7 @@ async fn handle_socket(ws: WebSocket, addr: SocketAddr, dest: Arc<Destination>) 
             info!("{} target:[{}] Connection started", addr, dest.as_ref());
             if let Err(e) = match stream {
                 NetStream::Tcp(x) => handle_connection(addr, ws, x).await,
+                NetStream::WireGuard(x) => handle_connection(addr, ws, x).await,
             } {
                 error!("{}: Error: {}", addr, e);
             }

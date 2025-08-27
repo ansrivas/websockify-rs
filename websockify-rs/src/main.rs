@@ -1,7 +1,11 @@
 pub use axum_websockify::error::WebsockifyError;
 
-use axum::{response::{IntoResponse, Redirect}, routing::get, Router};
-use std::net::SocketAddr;
+use axum::{
+    response::{IntoResponse, Redirect},
+    routing::get,
+    Router,
+};
+use std::{default, net::SocketAddr, sync::Arc};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use axum::http::Uri;
@@ -36,8 +40,6 @@ where
     }
 }
 
- 
-
 async fn static_handler(uri: Uri) -> impl IntoResponse {
     let mut path = uri.path().trim_start_matches('/').to_string();
 
@@ -46,6 +48,13 @@ async fn static_handler(uri: Uri) -> impl IntoResponse {
     }
     tracing::debug!("path requested : {}", path);
     StaticFile(path)
+}
+
+#[derive(Debug, Clone, Default, clap::ValueEnum)]
+pub enum UpstreamType {
+    #[default]
+    Tcp,
+    Wireguard,
 }
 
 use clap::Parser;
@@ -70,6 +79,10 @@ struct Cli {
     /// Verbosity (can be used multiple times)
     #[arg(short, long, action = clap::ArgAction::Count)]
     verbose: u8,
+
+    /// Upstream type (tcp or wg)
+    #[arg(short, long)]
+    upstream_type: UpstreamType,
 }
 
 #[tokio::main]
@@ -101,7 +114,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    let upstream = axum_websockify::Destination::tcp(args.upstream).unwrap();
+    let upstream = match args.upstream_type {
+        UpstreamType::Tcp => {
+            tracing::info!("Tcp is the upstream");
+            axum_websockify::Destination::tcp(args.upstream).unwrap()
+        }
+        UpstreamType::Wireguard => {
+            tracing::info!("Wireguard is the upstream");
+            let interface = Arc::new(axum_websockify::utils::setup_wireguard_interface().await?);
+            axum_websockify::Destination::wireguard(args.upstream, interface).unwrap()
+        }
+    };
 
     let static_url = "/static/vnc.html".parse::<Uri>().unwrap();
 
@@ -109,8 +132,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let app = Router::new()
         .nest("/websockify", axum_websockify::create_router(upstream))
         .route("/static/{*wildcard}", get(static_handler))
-        .route("/index.html", get(|| async { Redirect::permanent("/static/vnc.html") }))
-        .route("/", get(|| async { Redirect::permanent("/static/vnc.html") }))
+        .route(
+            "/index.html",
+            get(|| async { Redirect::permanent("/static/vnc.html") }),
+        )
+        .route(
+            "/",
+            get(|| async { Redirect::permanent("/static/vnc.html") }),
+        )
         .layer(TraceLayer::new_for_http());
 
     let listener = tokio::net::TcpListener::bind(&args.listen).await.unwrap();
