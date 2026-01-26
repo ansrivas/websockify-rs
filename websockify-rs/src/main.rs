@@ -14,7 +14,7 @@ use tower_http::trace::TraceLayer;
 use axum::http::{header, StatusCode};
 
 #[derive(RustEmbed)]
-#[folder = "noVNC"]
+#[folder = "novnc/1.3.0/noVNC"]
 struct Asset;
 
 pub struct StaticFile<T>(pub T);
