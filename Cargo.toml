@@ -1,2 +1,2 @@
 [workspace]
-members = ["warp-websockify", "websockify-rs"]
+members = ["axum-websockify", "websockify-rs"]

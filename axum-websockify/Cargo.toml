@@ -1,0 +1,21 @@
+[package]
+name = "axum-websockify"
+version = "0.3.0"
+authors = ["Okamura Yasunobu <okamura@informationsea.info>"]
+edition = "2018"
+license = "Apache-2.0"
+description = "websockify implementation for axum"
+readme = "README.md"
+homepage = "https://github.com/informationsea/websockify-rs"
+repository = "https://github.com/informationsea/websockify-rs"
+keywords = ["websocket", "websockify", "axum"]
+categories = ["web-programming::websocket", "web-programming::http-server", "network-programming"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+axum = { version = "0.8", features = ["ws"] }
+tokio = { version = "1.2", features = ["macros"] }
+futures-util = "0.3"
+thiserror = "2"
+tracing = "0.1"
