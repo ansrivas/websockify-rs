@@ -15,7 +15,7 @@ categories = ["web-programming::websocket", "web-programming::http-server", "net
 
 [dependencies]
 axum = { version = "0.8", features = ["ws"] }
-tokio = { version = "1.2", features = ["macros"] }
+tokio = { version = "1", features = ["macros"] }
 futures-util = "0.3"
 thiserror = "2"
 tracing = "0.1"

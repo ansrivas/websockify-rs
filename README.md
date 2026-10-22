@@ -23,6 +23,7 @@ FLAGS:
 
 OPTIONS:
     -p, --prefix <prefix>    server prefix
+        --novnc <version>    Embedded noVNC version to serve [default: 1.7.0]
 
 ARGS:
     <upstream>    Upstream host:port
@@ -34,6 +35,7 @@ ARGS:
 ```
 $ vncserver
 $ ./websockify-rs localhost:5901 127.0.0.1:8080
+$ ./websockify-rs --novnc 1.6.0 localhost:5901 127.0.0.1:8080
 ```
 
 Access to [http://127.0.0.1/static/vnc.html](http://127.0.0.1/static/vnc.html)

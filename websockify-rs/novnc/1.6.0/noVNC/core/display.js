@@ -6,15 +6,15 @@
  * See README.md for usage and integration instructions.
  */
 
-import * as Log from './util/logging.js';
+import * as Log from "./util/logging.js";
 import Base64 from "./base64.js";
-import { toSigned32bit } from './util/int.js';
+import { toSigned32bit } from "./util/int.js";
 
 export default class Display {
     constructor(target) {
         this._drawCtx = null;
 
-        this._renderQ = [];  // queue drawing actions for in-oder rendering
+        this._renderQ = []; // queue drawing actions for in-oder rendering
         this._flushPromise = null;
 
         // the full frame buffer (logical canvas) size
@@ -32,26 +32,34 @@ export default class Display {
             throw new Error("Target must be set");
         }
 
-        if (typeof this._target === 'string') {
-            throw new Error('target must be a DOM element');
+        if (typeof this._target === "string") {
+            throw new Error("target must be a DOM element");
         }
 
         if (!this._target.getContext) {
             throw new Error("no getContext method");
         }
 
-        this._targetCtx = this._target.getContext('2d');
+        this._targetCtx = this._target.getContext("2d");
 
         // the visible canvas viewport (i.e. what actually gets seen)
-        this._viewportLoc = { 'x': 0, 'y': 0, 'w': this._target.width, 'h': this._target.height };
+        this._viewportLoc = {
+            x: 0,
+            y: 0,
+            w: this._target.width,
+            h: this._target.height,
+        };
 
         // The hidden canvas, where we do the actual rendering
-        this._backbuffer = document.createElement('canvas');
-        this._drawCtx = this._backbuffer.getContext('2d');
+        this._backbuffer = document.createElement("canvas");
+        this._drawCtx = this._backbuffer.getContext("2d");
 
-        this._damageBounds = { left: 0, top: 0,
-                               right: this._backbuffer.width,
-                               bottom: this._backbuffer.height };
+        this._damageBounds = {
+            left: 0,
+            top: 0,
+            right: this._backbuffer.width,
+            bottom: this._backbuffer.height,
+        };
 
         Log.Debug("User Agent: " + navigator.userAgent);
 
@@ -61,16 +69,27 @@ export default class Display {
 
         this._scale = 1.0;
         this._clipViewport = false;
+
+        // Some VNC servers ignore the client's SetPixelFormat and emit
+        // pixels in BGR order (red in the high byte), which makes red look
+        // blue. When this is true the Display swaps the red/blue channels
+        // while blitting pixels and colors. Off by default so that
+        // spec-compliant servers are unaffected.
+        this._swapRB = false;
     }
 
     // ===== PROPERTIES =====
 
-    get scale() { return this._scale; }
+    get scale() {
+        return this._scale;
+    }
     set scale(scale) {
         this._rescale(scale);
     }
 
-    get clipViewport() { return this._clipViewport; }
+    get clipViewport() {
+        return this._clipViewport;
+    }
     set clipViewport(viewport) {
         this._clipViewport = viewport;
         // May need to readjust the viewport dimensions
@@ -87,7 +106,14 @@ export default class Display {
         return this._fbHeight;
     }
 
-    // ===== PUBLIC METHODS =====
+    get swapRB() {
+        return this._swapRB;
+    }
+    set swapRB(swap) {
+        this._swapRB = swap;
+    }
+
+    // ===== PUBLIC METHODS ===
 
     viewportChangePos(deltaX, deltaY) {
         const vp = this._viewportLoc;
@@ -95,7 +121,7 @@ export default class Display {
         deltaY = Math.floor(deltaY);
 
         if (!this._clipViewport) {
-            deltaX = -vp.w;  // clamped later of out of bounds
+            deltaX = -vp.w; // clamped later of out of bounds
             deltaY = -vp.h;
         }
 
@@ -115,7 +141,7 @@ export default class Display {
             deltaY = -vp.y;
         }
         if (vy2 + deltaY >= this._fbHeight) {
-            deltaY -= (vy2 + deltaY - this._fbHeight + 1);
+            deltaY -= vy2 + deltaY - this._fbHeight + 1;
         }
 
         if (deltaX === 0 && deltaY === 0) {
@@ -132,11 +158,11 @@ export default class Display {
     }
 
     viewportChangeSize(width, height) {
-
-        if (!this._clipViewport ||
-            typeof(width) === "undefined" ||
-            typeof(height) === "undefined") {
-
+        if (
+            !this._clipViewport ||
+            typeof width === "undefined" ||
+            typeof height === "undefined"
+        ) {
             Log.Debug("Setting viewport to full display region");
             width = this._fbWidth;
             height = this._fbHeight;
@@ -194,11 +220,15 @@ export default class Display {
 
         const canvas = this._backbuffer;
         if (canvas.width !== width || canvas.height !== height) {
-
             // We have to save the canvas data since changing the size will clear it
             let saveImg = null;
             if (canvas.width > 0 && canvas.height > 0) {
-                saveImg = this._drawCtx.getImageData(0, 0, canvas.width, canvas.height);
+                saveImg = this._drawCtx.getImageData(
+                    0,
+                    0,
+                    canvas.width,
+                    canvas.height,
+                );
             }
 
             if (canvas.width !== width) {
@@ -240,10 +270,10 @@ export default class Display {
         if (y < this._damageBounds.top) {
             this._damageBounds.top = y;
         }
-        if ((x + w) > this._damageBounds.right) {
+        if (x + w > this._damageBounds.right) {
             this._damageBounds.right = x + w;
         }
-        if ((y + h) > this._damageBounds.bottom) {
+        if (y + h > this._damageBounds.bottom) {
             this._damageBounds.bottom = y + h;
         }
     }
@@ -253,7 +283,7 @@ export default class Display {
     flip(fromQueue) {
         if (this._renderQ.length !== 0 && !fromQueue) {
             this._renderQPush({
-                'type': 'flip'
+                type: "flip",
             });
         } else {
             let x = this._damageBounds.left;
@@ -275,20 +305,28 @@ export default class Display {
                 vy = 0;
             }
 
-            if ((vx + w) > this._viewportLoc.w) {
+            if (vx + w > this._viewportLoc.w) {
                 w = this._viewportLoc.w - vx;
             }
-            if ((vy + h) > this._viewportLoc.h) {
+            if (vy + h > this._viewportLoc.h) {
                 h = this._viewportLoc.h - vy;
             }
 
-            if ((w > 0) && (h > 0)) {
+            if (w > 0 && h > 0) {
                 // FIXME: We may need to disable image smoothing here
                 //        as well (see copyImage()), but we haven't
                 //        noticed any problem yet.
-                this._targetCtx.drawImage(this._backbuffer,
-                                          x, y, w, h,
-                                          vx, vy, w, h);
+                this._targetCtx.drawImage(
+                    this._backbuffer,
+                    x,
+                    y,
+                    w,
+                    h,
+                    vx,
+                    vy,
+                    w,
+                    h,
+                );
             }
 
             this._damageBounds.left = this._damageBounds.top = 65535;
@@ -316,12 +354,12 @@ export default class Display {
     fillRect(x, y, width, height, color, fromQueue) {
         if (this._renderQ.length !== 0 && !fromQueue) {
             this._renderQPush({
-                'type': 'fill',
-                'x': x,
-                'y': y,
-                'width': width,
-                'height': height,
-                'color': color
+                type: "fill",
+                x: x,
+                y: y,
+                width: width,
+                height: height,
+                color: color,
             });
         } else {
             this._setFillColor(color);
@@ -333,13 +371,13 @@ export default class Display {
     copyImage(oldX, oldY, newX, newY, w, h, fromQueue) {
         if (this._renderQ.length !== 0 && !fromQueue) {
             this._renderQPush({
-                'type': 'copy',
-                'oldX': oldX,
-                'oldY': oldY,
-                'x': newX,
-                'y': newY,
-                'width': w,
-                'height': h,
+                type: "copy",
+                oldX: oldX,
+                oldY: oldY,
+                x: newX,
+                y: newY,
+                width: w,
+                height: h,
             });
         } else {
             // Due to this bug among others [1] we need to disable the image-smoothing to
@@ -354,16 +392,24 @@ export default class Display {
             this._drawCtx.msImageSmoothingEnabled = false;
             this._drawCtx.imageSmoothingEnabled = false;
 
-            this._drawCtx.drawImage(this._backbuffer,
-                                    oldX, oldY, w, h,
-                                    newX, newY, w, h);
+            this._drawCtx.drawImage(
+                this._backbuffer,
+                oldX,
+                oldY,
+                w,
+                h,
+                newX,
+                newY,
+                w,
+                h,
+            );
             this._damage(newX, newY, w, h);
         }
     }
 
     imageRect(x, y, width, height, mime, arr) {
         /* The internal logic cannot handle empty images, so bail early */
-        if ((width === 0) || (height === 0)) {
+        if (width === 0 || height === 0) {
             return;
         }
 
@@ -371,23 +417,23 @@ export default class Display {
         img.src = "data: " + mime + ";base64," + Base64.encode(arr);
 
         this._renderQPush({
-            'type': 'img',
-            'img': img,
-            'x': x,
-            'y': y,
-            'width': width,
-            'height': height
+            type: "img",
+            img: img,
+            x: x,
+            y: y,
+            width: width,
+            height: height,
         });
     }
 
     videoFrame(x, y, width, height, frame) {
         this._renderQPush({
-            'type': 'frame',
-            'frame': frame,
-            'x': x,
-            'y': y,
-            'width': width,
-            'height': height
+            type: "frame",
+            frame: frame,
+            x: x,
+            y: y,
+            width: width,
+            height: height,
         });
     }
 
@@ -397,20 +443,44 @@ export default class Display {
             // but it's a lot of extra work for not a lot of payoff -- if we're using the render queue,
             // this probably isn't getting called *nearly* as much
             const newArr = new Uint8Array(width * height * 4);
-            newArr.set(new Uint8Array(arr.buffer, 0, newArr.length));
+            // Copy from the same byte range the direct branch uses
+            // (arr.byteOffset + offset) -- copying from byte 0 would render the
+            // wrong pixels when arr is a view into a larger buffer.
+            newArr.set(
+                new Uint8Array(
+                    arr.buffer,
+                    arr.byteOffset + offset,
+                    width * height * 4,
+                ),
+            );
             this._renderQPush({
-                'type': 'blit',
-                'data': newArr,
-                'x': x,
-                'y': y,
-                'width': width,
-                'height': height,
+                type: "blit",
+                data: newArr,
+                x: x,
+                y: y,
+                width: width,
+                height: height,
             });
         } else {
             // NB(directxman12): arr must be an Type Array view
-            let data = new Uint8ClampedArray(arr.buffer,
-                                             arr.byteOffset + offset,
-                                             width * height * 4);
+            let data = new Uint8ClampedArray(
+                arr.buffer,
+                arr.byteOffset + offset,
+                width * height * 4,
+            );
+            if (this._swapRB) {
+                // Server ignored our RGB SetPixelFormat and answered with BGR.
+                // Swap red/blue so the canvas receives plain RGBA. Copy first
+                // so we never mutate the (possibly shared/reused) source buffer.
+                const swapped = new Uint8ClampedArray(data.length);
+                for (let i = 0; i < data.length; i += 4) {
+                    swapped[i] = data[i + 2]; // B -> R
+                    swapped[i + 1] = data[i + 1]; // G -> G
+                    swapped[i + 2] = data[i]; // R -> B
+                    swapped[i + 3] = data[i + 3]; // A -> A
+                }
+                data = swapped;
+            }
             let img = new ImageData(data, width, height);
             this._drawCtx.putImageData(img, x, y);
             this._damage(x, y, width, height);
@@ -424,7 +494,7 @@ export default class Display {
             const [x, y] = args;
             this._damage(x, y, img.width, img.height);
         } else {
-            const [,, sw, sh, dx, dy] = args;
+            const [, , sw, sh, dx, dy] = args;
             this._damage(dx, dy, sw, sh);
         }
     }
@@ -434,9 +504,7 @@ export default class Display {
 
         if (containerWidth === 0 || containerHeight === 0) {
             scaleRatio = 0;
-
         } else {
-
             const vp = this._viewportLoc;
             const targetAspectRatio = containerWidth / containerHeight;
             const fbAspectRatio = vp.w / vp.h;
@@ -461,18 +529,27 @@ export default class Display {
         //                   style width to a number, the canvas is cleared.
         //                   However, if you set the style width to a string
         //                   ('NNNpx'), the canvas is scaled without clearing.
-        const width = factor * vp.w + 'px';
-        const height = factor * vp.h + 'px';
+        const width = factor * vp.w + "px";
+        const height = factor * vp.h + "px";
 
-        if ((this._target.style.width !== width) ||
-            (this._target.style.height !== height)) {
+        if (
+            this._target.style.width !== width ||
+            this._target.style.height !== height
+        ) {
             this._target.style.width = width;
             this._target.style.height = height;
         }
     }
 
     _setFillColor(color) {
-        const newStyle = 'rgb(' + color[0] + ',' + color[1] + ',' + color[2] + ')';
+        let red = color[0];
+        let green = color[1];
+        let blue = color[2];
+        if (this._swapRB) {
+            // Server sent BGR; swap red/blue to match the canvas RGB model.
+            [red, blue] = [blue, red];
+        }
+        const newStyle = "rgb(" + red + "," + green + "," + blue + ")";
         if (newStyle !== this._prevDrawStyle) {
             this._drawCtx.fillStyle = newStyle;
             this._prevDrawStyle = newStyle;
@@ -491,7 +568,7 @@ export default class Display {
     _resumeRenderQ() {
         // "this" is the object that is ready, not the
         // display object
-        this.removeEventListener('load', this._noVNCDisplay._resumeRenderQ);
+        this.removeEventListener("load", this._noVNCDisplay._resumeRenderQ);
         this._noVNCDisplay._scanRenderQ();
     }
 
@@ -500,45 +577,82 @@ export default class Display {
         while (ready && this._renderQ.length > 0) {
             const a = this._renderQ[0];
             switch (a.type) {
-                case 'flip':
+                case "flip":
                     this.flip(true);
                     break;
-                case 'copy':
-                    this.copyImage(a.oldX, a.oldY, a.x, a.y, a.width, a.height, true);
+                case "copy":
+                    this.copyImage(
+                        a.oldX,
+                        a.oldY,
+                        a.x,
+                        a.y,
+                        a.width,
+                        a.height,
+                        true,
+                    );
                     break;
-                case 'fill':
+                case "fill":
                     this.fillRect(a.x, a.y, a.width, a.height, a.color, true);
                     break;
-                case 'blit':
-                    this.blitImage(a.x, a.y, a.width, a.height, a.data, 0, true);
+                case "blit":
+                    this.blitImage(
+                        a.x,
+                        a.y,
+                        a.width,
+                        a.height,
+                        a.data,
+                        0,
+                        true,
+                    );
                     break;
-                case 'img':
+                case "img":
                     if (a.img.complete) {
-                        if (a.img.width !== a.width || a.img.height !== a.height) {
-                            Log.Error("Decoded image has incorrect dimensions. Got " +
-                                      a.img.width + "x" + a.img.height + ". Expected " +
-                                      a.width + "x" + a.height + ".");
+                        if (
+                            a.img.width !== a.width ||
+                            a.img.height !== a.height
+                        ) {
+                            Log.Error(
+                                "Decoded image has incorrect dimensions. Got " +
+                                    a.img.width +
+                                    "x" +
+                                    a.img.height +
+                                    ". Expected " +
+                                    a.width +
+                                    "x" +
+                                    a.height +
+                                    ".",
+                            );
                             return;
                         }
                         this.drawImage(a.img, a.x, a.y);
                     } else {
                         a.img._noVNCDisplay = this;
-                        a.img.addEventListener('load', this._resumeRenderQ);
+                        a.img.addEventListener("load", this._resumeRenderQ);
                         // We need to wait for this image to 'load'
                         // to keep things in-order
                         ready = false;
                     }
                     break;
-                case 'frame':
+                case "frame":
                     if (a.frame.ready) {
                         // The encoded frame may be larger than the rect due to
                         // limitations of the encoder, so we need to crop the
                         // frame.
                         let frame = a.frame.frame;
-                        if (frame.codedWidth < a.width || frame.codedHeight < a.height) {
-                            Log.Warn("Decoded video frame does not cover its full rectangle area. Expecting at least " +
-                                      a.width + "x" + a.height + " but got " +
-                                      frame.codedWidth + "x" + frame.codedHeight);
+                        if (
+                            frame.codedWidth < a.width ||
+                            frame.codedHeight < a.height
+                        ) {
+                            Log.Warn(
+                                "Decoded video frame does not cover its full rectangle area. Expecting at least " +
+                                    a.width +
+                                    "x" +
+                                    a.height +
+                                    " but got " +
+                                    frame.codedWidth +
+                                    "x" +
+                                    frame.codedHeight,
+                            );
                         }
                         const sx = 0;
                         const sy = 0;
@@ -565,8 +679,7 @@ export default class Display {
             }
         }
 
-        if (this._renderQ.length === 0 &&
-            this._flushPromise !== null) {
+        if (this._renderQ.length === 0 && this._flushPromise !== null) {
             this._flushResolve();
             this._flushPromise = null;
             this._flushResolve = null;

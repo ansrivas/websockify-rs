@@ -7,13 +7,13 @@
  *
  */
 
-import { toUnsigned32bit, toSigned32bit } from './util/int.js';
-import * as Log from './util/logging.js';
-import { encodeUTF8, decodeUTF8 } from './util/strings.js';
-import { dragThreshold, supportsWebCodecsH264Decode } from './util/browser.js';
-import { clientToElement } from './util/element.js';
-import { setCapture } from './util/events.js';
-import EventTargetMixin from './util/eventtarget.js';
+import { toUnsigned32bit, toSigned32bit } from "./util/int.js";
+import * as Log from "./util/logging.js";
+import { encodeUTF8, decodeUTF8 } from "./util/strings.js";
+import { dragThreshold, supportsWebCodecsH264Decode } from "./util/browser.js";
+import { clientToElement } from "./util/element.js";
+import { setCapture } from "./util/events.js";
+import EventTargetMixin from "./util/eventtarget.js";
 import Display from "./display.js";
 import Inflator from "./inflator.js";
 import Deflator from "./deflator.js";
@@ -31,7 +31,7 @@ import RawDecoder from "./decoders/raw.js";
 import CopyRectDecoder from "./decoders/copyrect.js";
 import RREDecoder from "./decoders/rre.js";
 import HextileDecoder from "./decoders/hextile.js";
-import ZlibDecoder from './decoders/zlib.js';
+import ZlibDecoder from "./decoders/zlib.js";
 import TightDecoder from "./decoders/tight.js";
 import TightPNGDecoder from "./decoders/tightpng.js";
 import ZRLEDecoder from "./decoders/zrle.js";
@@ -40,7 +40,7 @@ import H264Decoder from "./decoders/h264.js";
 
 // How many seconds to wait for a disconnect to finish
 const DISCONNECT_TIMEOUT = 3;
-const DEFAULT_BACKGROUND = 'rgb(40, 40, 40)';
+const DEFAULT_BACKGROUND = "rgb(40, 40, 40)";
 
 // Minimum wait (ms) between two mouse moves
 const MOUSE_MOVE_DELAY = 17;
@@ -56,35 +56,35 @@ const DOUBLE_TAP_TIMEOUT = 1000;
 const DOUBLE_TAP_THRESHOLD = 50;
 
 // Security types
-const securityTypeNone              = 1;
-const securityTypeVNCAuth           = 2;
-const securityTypeRA2ne             = 6;
-const securityTypeTight             = 16;
-const securityTypeVeNCrypt          = 19;
-const securityTypeXVP               = 22;
-const securityTypeARD               = 30;
-const securityTypeMSLogonII         = 113;
+const securityTypeNone = 1;
+const securityTypeVNCAuth = 2;
+const securityTypeRA2ne = 6;
+const securityTypeTight = 16;
+const securityTypeVeNCrypt = 19;
+const securityTypeXVP = 22;
+const securityTypeARD = 30;
+const securityTypeMSLogonII = 113;
 
 // Special Tight security types
-const securityTypeUnixLogon         = 129;
+const securityTypeUnixLogon = 129;
 
 // VeNCrypt security types
-const securityTypePlain             = 256;
+const securityTypePlain = 256;
 
 // Extended clipboard pseudo-encoding formats
-const extendedClipboardFormatText   = 1;
+const extendedClipboardFormatText = 1;
 /*eslint-disable no-unused-vars */
-const extendedClipboardFormatRtf    = 1 << 1;
-const extendedClipboardFormatHtml   = 1 << 2;
-const extendedClipboardFormatDib    = 1 << 3;
-const extendedClipboardFormatFiles  = 1 << 4;
+const extendedClipboardFormatRtf = 1 << 1;
+const extendedClipboardFormatHtml = 1 << 2;
+const extendedClipboardFormatDib = 1 << 3;
+const extendedClipboardFormatFiles = 1 << 4;
 /*eslint-enable */
 
 // Extended clipboard pseudo-encoding actions
-const extendedClipboardActionCaps    = 1 << 24;
+const extendedClipboardActionCaps = 1 << 24;
 const extendedClipboardActionRequest = 1 << 25;
-const extendedClipboardActionPeek    = 1 << 26;
-const extendedClipboardActionNotify  = 1 << 27;
+const extendedClipboardActionPeek = 1 << 26;
+const extendedClipboardActionNotify = 1 << 27;
 const extendedClipboardActionProvide = 1 << 28;
 
 export default class RFB extends EventTargetMixin {
@@ -116,13 +116,13 @@ export default class RFB extends EventTargetMixin {
         // Connection details
         options = options || {};
         this._rfbCredentials = options.credentials || {};
-        this._shared = 'shared' in options ? !!options.shared : true;
-        this._repeaterID = options.repeaterID || '';
+        this._shared = "shared" in options ? !!options.shared : true;
+        this._repeaterID = options.repeaterID || "";
         this._wsProtocols = options.wsProtocols || [];
 
         // Internal state
-        this._rfbConnectionState = '';
-        this._rfbInitState = '';
+        this._rfbConnectionState = "";
+        this._rfbInitState = "";
         this._rfbAuthScheme = -1;
         this._rfbCleanDisconnect = true;
         this._rfbRSAAESAuthenticationState = null;
@@ -161,16 +161,16 @@ export default class RFB extends EventTargetMixin {
         this._clipboardServerCapabilitiesFormats = {};
 
         // Internal objects
-        this._sock = null;              // Websock object
-        this._display = null;           // Display object
-        this._flushing = false;         // Display flushing state
-        this._keyboard = null;          // Keyboard input handler object
-        this._gestures = null;          // Gesture input handler object
-        this._resizeObserver = null;    // Resize observer object
+        this._sock = null; // Websock object
+        this._display = null; // Display object
+        this._flushing = false; // Display flushing state
+        this._keyboard = null; // Keyboard input handler object
+        this._gestures = null; // Gesture input handler object
+        this._resizeObserver = null; // Resize observer object
 
         // Timers
-        this._disconnTimer = null;      // disconnection timer
-        this._resizeTimeout = null;     // resize rate limiting
+        this._disconnTimer = null; // disconnection timer
+        this._resizeTimeout = null; // resize rate limiting
         this._mouseMoveTimer = null;
 
         // Decoder states
@@ -208,24 +208,26 @@ export default class RFB extends EventTargetMixin {
             handleMouse: this._handleMouse.bind(this),
             handleWheel: this._handleWheel.bind(this),
             handleGesture: this._handleGesture.bind(this),
-            handleRSAAESCredentialsRequired: this._handleRSAAESCredentialsRequired.bind(this),
-            handleRSAAESServerVerification: this._handleRSAAESServerVerification.bind(this),
+            handleRSAAESCredentialsRequired:
+                this._handleRSAAESCredentialsRequired.bind(this),
+            handleRSAAESServerVerification:
+                this._handleRSAAESServerVerification.bind(this),
         };
 
         // main setup
         Log.Debug(">> RFB.constructor");
 
         // Create DOM elements
-        this._screen = document.createElement('div');
-        this._screen.style.display = 'flex';
-        this._screen.style.width = '100%';
-        this._screen.style.height = '100%';
-        this._screen.style.overflow = 'auto';
+        this._screen = document.createElement("div");
+        this._screen.style.display = "flex";
+        this._screen.style.width = "100%";
+        this._screen.style.height = "100%";
+        this._screen.style.overflow = "auto";
         this._screen.style.background = DEFAULT_BACKGROUND;
-        this._canvas = document.createElement('canvas');
-        this._canvas.style.margin = 'auto';
+        this._canvas = document.createElement("canvas");
+        this._canvas.style.margin = "auto";
         // Some browsers add an outline on focus
-        this._canvas.style.outline = 'none';
+        this._canvas.style.outline = "none";
         this._canvas.width = 0;
         this._canvas.height = 0;
         this._canvas.tabIndex = -1;
@@ -274,17 +276,19 @@ export default class RFB extends EventTargetMixin {
         this._gestures = new GestureHandler();
 
         this._sock = new Websock();
-        this._sock.on('open', this._socketOpen.bind(this));
-        this._sock.on('close', this._socketClose.bind(this));
-        this._sock.on('message', this._handleMessage.bind(this));
-        this._sock.on('error', this._socketError.bind(this));
+        this._sock.on("open", this._socketOpen.bind(this));
+        this._sock.on("close", this._socketClose.bind(this));
+        this._sock.on("message", this._handleMessage.bind(this));
+        this._sock.on("error", this._socketError.bind(this));
 
         this._expectedClientWidth = null;
         this._expectedClientHeight = null;
-        this._resizeObserver = new ResizeObserver(this._eventHandlers.handleResize);
+        this._resizeObserver = new ResizeObserver(
+            this._eventHandlers.handleResize,
+        );
 
         // All prepared, kick off the connection
-        this._updateConnectionState('connecting');
+        this._updateConnectionState("connecting");
 
         Log.Debug("<< RFB.constructor");
 
@@ -301,9 +305,16 @@ export default class RFB extends EventTargetMixin {
 
         this._showDotCursor = false;
         if (options.showDotCursor !== undefined) {
-            Log.Warn("Specifying showDotCursor as a RFB constructor argument is deprecated");
+            Log.Warn(
+                "Specifying showDotCursor as a RFB constructor argument is deprecated",
+            );
             this._showDotCursor = options.showDotCursor;
         }
+
+        // Workaround for VNC servers that ignore the client's SetPixelFormat
+        // and emit pixels in BGR order. Forwarded to the Display so the
+        // red/blue channels are swapped while decoding. Off by default.
+        this._swapRB = false;
 
         this._qualityLevel = 6;
         this._compressionLevel = 2;
@@ -311,12 +322,16 @@ export default class RFB extends EventTargetMixin {
 
     // ===== PROPERTIES =====
 
-    get viewOnly() { return this._viewOnly; }
+    get viewOnly() {
+        return this._viewOnly;
+    }
     set viewOnly(viewOnly) {
         this._viewOnly = viewOnly;
 
-        if (this._rfbConnectionState === "connecting" ||
-            this._rfbConnectionState === "connected") {
+        if (
+            this._rfbConnectionState === "connecting" ||
+            this._rfbConnectionState === "connected"
+        ) {
             if (viewOnly) {
                 this._keyboard.ungrab();
             } else {
@@ -325,28 +340,43 @@ export default class RFB extends EventTargetMixin {
         }
     }
 
-    get capabilities() { return this._capabilities; }
+    get capabilities() {
+        return this._capabilities;
+    }
 
-    get clippingViewport() { return this._clippingViewport; }
+    get clippingViewport() {
+        return this._clippingViewport;
+    }
     _setClippingViewport(on) {
         if (on === this._clippingViewport) {
             return;
         }
         this._clippingViewport = on;
-        this.dispatchEvent(new CustomEvent("clippingviewport",
-                                           { detail: this._clippingViewport }));
+        this.dispatchEvent(
+            new CustomEvent("clippingviewport", {
+                detail: this._clippingViewport,
+            }),
+        );
     }
 
-    get touchButton() { return 0; }
-    set touchButton(button) { Log.Warn("Using old API!"); }
+    get touchButton() {
+        return 0;
+    }
+    set touchButton(button) {
+        Log.Warn("Using old API!");
+    }
 
-    get clipViewport() { return this._clipViewport; }
+    get clipViewport() {
+        return this._clipViewport;
+    }
     set clipViewport(viewport) {
         this._clipViewport = viewport;
         this._updateClip();
     }
 
-    get scaleViewport() { return this._scaleViewport; }
+    get scaleViewport() {
+        return this._scaleViewport;
+    }
     set scaleViewport(scale) {
         this._scaleViewport = scale;
         // Scaling trumps clipping, so we may need to adjust
@@ -360,7 +390,9 @@ export default class RFB extends EventTargetMixin {
         }
     }
 
-    get resizeSession() { return this._resizeSession; }
+    get resizeSession() {
+        return this._resizeSession;
+    }
     set resizeSession(resize) {
         this._resizeSession = resize;
         if (resize) {
@@ -368,20 +400,40 @@ export default class RFB extends EventTargetMixin {
         }
     }
 
-    get showDotCursor() { return this._showDotCursor; }
+    get showDotCursor() {
+        return this._showDotCursor;
+    }
     set showDotCursor(show) {
         this._showDotCursor = show;
         this._refreshCursor();
     }
 
-    get background() { return this._screen.style.background; }
-    set background(cssValue) { this._screen.style.background = cssValue; }
+    get swapRB() {
+        return this._swapRB;
+    }
+    set swapRB(swap) {
+        this._swapRB = swap;
+        if (this._display) {
+            this._display.swapRB = this._swapRB;
+        }
+    }
+
+    get background() {
+        return this._screen.style.background;
+    }
+    set background(cssValue) {
+        this._screen.style.background = cssValue;
+    }
 
     get qualityLevel() {
         return this._qualityLevel;
     }
     set qualityLevel(qualityLevel) {
-        if (!Number.isInteger(qualityLevel) || qualityLevel < 0 || qualityLevel > 9) {
+        if (
+            !Number.isInteger(qualityLevel) ||
+            qualityLevel < 0 ||
+            qualityLevel > 9
+        ) {
             Log.Error("qualityLevel must be an integer between 0 and 9");
             return;
         }
@@ -392,7 +444,7 @@ export default class RFB extends EventTargetMixin {
 
         this._qualityLevel = qualityLevel;
 
-        if (this._rfbConnectionState === 'connected') {
+        if (this._rfbConnectionState === "connected") {
             this._sendEncodings();
         }
     }
@@ -401,7 +453,11 @@ export default class RFB extends EventTargetMixin {
         return this._compressionLevel;
     }
     set compressionLevel(compressionLevel) {
-        if (!Number.isInteger(compressionLevel) || compressionLevel < 0 || compressionLevel > 9) {
+        if (
+            !Number.isInteger(compressionLevel) ||
+            compressionLevel < 0 ||
+            compressionLevel > 9
+        ) {
             Log.Error("compressionLevel must be an integer between 0 and 9");
             return;
         }
@@ -412,7 +468,7 @@ export default class RFB extends EventTargetMixin {
 
         this._compressionLevel = compressionLevel;
 
-        if (this._rfbConnectionState === 'connected') {
+        if (this._rfbConnectionState === "connected") {
             this._sendEncodings();
         }
     }
@@ -420,10 +476,10 @@ export default class RFB extends EventTargetMixin {
     // ===== PUBLIC METHODS =====
 
     disconnect() {
-        this._updateConnectionState('disconnecting');
-        this._sock.off('error');
-        this._sock.off('message');
-        this._sock.off('open');
+        this._updateConnectionState("disconnecting");
+        this._sock.off("error");
+        this._sock.off("message");
+        this._sock.off("open");
         if (this._rfbRSAAESAuthenticationState !== null) {
             this._rfbRSAAESAuthenticationState.disconnect();
         }
@@ -441,7 +497,9 @@ export default class RFB extends EventTargetMixin {
     }
 
     sendCtrlAltDel() {
-        if (this._rfbConnectionState !== 'connected' || this._viewOnly) { return; }
+        if (this._rfbConnectionState !== "connected" || this._viewOnly) {
+            return;
+        }
         Log.Info("Sending Ctrl-Alt-Del");
 
         this.sendKey(KeyTable.XK_Control_L, "ControlLeft", true);
@@ -467,7 +525,9 @@ export default class RFB extends EventTargetMixin {
     // Send a key press. If 'down' is not specified then send a down key
     // followed by an up key.
     sendKey(keysym, code, down) {
-        if (this._rfbConnectionState !== 'connected' || this._viewOnly) { return; }
+        if (this._rfbConnectionState !== "connected" || this._viewOnly) {
+            return;
+        }
 
         if (down === undefined) {
             this.sendKey(keysym, code, true);
@@ -481,14 +541,28 @@ export default class RFB extends EventTargetMixin {
             // 0 is NoSymbol
             keysym = keysym || 0;
 
-            Log.Info("Sending key (" + (down ? "down" : "up") + "): keysym " + keysym + ", scancode " + scancode);
+            Log.Info(
+                "Sending key (" +
+                    (down ? "down" : "up") +
+                    "): keysym " +
+                    keysym +
+                    ", scancode " +
+                    scancode,
+            );
 
-            RFB.messages.QEMUExtendedKeyEvent(this._sock, keysym, down, scancode);
+            RFB.messages.QEMUExtendedKeyEvent(
+                this._sock,
+                keysym,
+                down,
+                scancode,
+            );
         } else {
             if (!keysym) {
                 return;
             }
-            Log.Info("Sending keysym (" + (down ? "down" : "up") + "): " + keysym);
+            Log.Info(
+                "Sending keysym (" + (down ? "down" : "up") + "): " + keysym,
+            );
             RFB.messages.keyEvent(this._sock, keysym, down ? 1 : 0);
         }
     }
@@ -502,13 +576,22 @@ export default class RFB extends EventTargetMixin {
     }
 
     clipboardPasteFrom(text) {
-        if (this._rfbConnectionState !== 'connected' || this._viewOnly) { return; }
+        if (this._rfbConnectionState !== "connected" || this._viewOnly) {
+            return;
+        }
 
-        if (this._clipboardServerCapabilitiesFormats[extendedClipboardFormatText] &&
-            this._clipboardServerCapabilitiesActions[extendedClipboardActionNotify]) {
-
+        if (
+            this._clipboardServerCapabilitiesFormats[
+                extendedClipboardFormatText
+            ] &&
+            this._clipboardServerCapabilitiesActions[
+                extendedClipboardActionNotify
+            ]
+        ) {
             this._clipboardText = text;
-            RFB.messages.extendedClipboardNotify(this._sock, [extendedClipboardFormatText]);
+            RFB.messages.extendedClipboardNotify(this._sock, [
+                extendedClipboardFormatText,
+            ]);
         } else {
             let length, i;
             let data;
@@ -561,11 +644,13 @@ export default class RFB extends EventTargetMixin {
             Log.Info(`attaching ${this._rawChannel} to Websock`);
             this._sock.attach(this._rawChannel);
 
-            if (this._sock.readyState === 'closed') {
-                throw Error("Cannot use already closed WebSocket/RTCDataChannel");
+            if (this._sock.readyState === "closed") {
+                throw new Error(
+                    "Cannot use already closed WebSocket/RTCDataChannel",
+                );
             }
 
-            if (this._sock.readyState === 'open') {
+            if (this._sock.readyState === "open") {
                 // FIXME: _socketOpen() can in theory call _fail(), which
                 //        isn't allowed this early, but I'm not sure that can
                 //        happen without a bug messing up our state variables
@@ -585,26 +670,53 @@ export default class RFB extends EventTargetMixin {
         this._resizeObserver.observe(this._screen);
 
         // Always grab focus on some kind of click event
-        this._canvas.addEventListener("mousedown", this._eventHandlers.focusCanvas);
-        this._canvas.addEventListener("touchstart", this._eventHandlers.focusCanvas);
+        this._canvas.addEventListener(
+            "mousedown",
+            this._eventHandlers.focusCanvas,
+        );
+        this._canvas.addEventListener(
+            "touchstart",
+            this._eventHandlers.focusCanvas,
+        );
 
         // Mouse events
-        this._canvas.addEventListener('mousedown', this._eventHandlers.handleMouse);
-        this._canvas.addEventListener('mouseup', this._eventHandlers.handleMouse);
-        this._canvas.addEventListener('mousemove', this._eventHandlers.handleMouse);
+        this._canvas.addEventListener(
+            "mousedown",
+            this._eventHandlers.handleMouse,
+        );
+        this._canvas.addEventListener(
+            "mouseup",
+            this._eventHandlers.handleMouse,
+        );
+        this._canvas.addEventListener(
+            "mousemove",
+            this._eventHandlers.handleMouse,
+        );
         // Prevent middle-click pasting (see handler for why we bind to document)
-        this._canvas.addEventListener('click', this._eventHandlers.handleMouse);
+        this._canvas.addEventListener("click", this._eventHandlers.handleMouse);
         // preventDefault() on mousedown doesn't stop this event for some
         // reason so we have to explicitly block it
-        this._canvas.addEventListener('contextmenu', this._eventHandlers.handleMouse);
+        this._canvas.addEventListener(
+            "contextmenu",
+            this._eventHandlers.handleMouse,
+        );
 
         // Wheel events
         this._canvas.addEventListener("wheel", this._eventHandlers.handleWheel);
 
         // Gesture events
-        this._canvas.addEventListener("gesturestart", this._eventHandlers.handleGesture);
-        this._canvas.addEventListener("gesturemove", this._eventHandlers.handleGesture);
-        this._canvas.addEventListener("gestureend", this._eventHandlers.handleGesture);
+        this._canvas.addEventListener(
+            "gesturestart",
+            this._eventHandlers.handleGesture,
+        );
+        this._canvas.addEventListener(
+            "gesturemove",
+            this._eventHandlers.handleGesture,
+        );
+        this._canvas.addEventListener(
+            "gestureend",
+            this._eventHandlers.handleGesture,
+        );
 
         Log.Debug("<< RFB.connect");
     }
@@ -612,17 +724,50 @@ export default class RFB extends EventTargetMixin {
     _disconnect() {
         Log.Debug(">> RFB.disconnect");
         this._cursor.detach();
-        this._canvas.removeEventListener("gesturestart", this._eventHandlers.handleGesture);
-        this._canvas.removeEventListener("gesturemove", this._eventHandlers.handleGesture);
-        this._canvas.removeEventListener("gestureend", this._eventHandlers.handleGesture);
-        this._canvas.removeEventListener("wheel", this._eventHandlers.handleWheel);
-        this._canvas.removeEventListener('mousedown', this._eventHandlers.handleMouse);
-        this._canvas.removeEventListener('mouseup', this._eventHandlers.handleMouse);
-        this._canvas.removeEventListener('mousemove', this._eventHandlers.handleMouse);
-        this._canvas.removeEventListener('click', this._eventHandlers.handleMouse);
-        this._canvas.removeEventListener('contextmenu', this._eventHandlers.handleMouse);
-        this._canvas.removeEventListener("mousedown", this._eventHandlers.focusCanvas);
-        this._canvas.removeEventListener("touchstart", this._eventHandlers.focusCanvas);
+        this._canvas.removeEventListener(
+            "gesturestart",
+            this._eventHandlers.handleGesture,
+        );
+        this._canvas.removeEventListener(
+            "gesturemove",
+            this._eventHandlers.handleGesture,
+        );
+        this._canvas.removeEventListener(
+            "gestureend",
+            this._eventHandlers.handleGesture,
+        );
+        this._canvas.removeEventListener(
+            "wheel",
+            this._eventHandlers.handleWheel,
+        );
+        this._canvas.removeEventListener(
+            "mousedown",
+            this._eventHandlers.handleMouse,
+        );
+        this._canvas.removeEventListener(
+            "mouseup",
+            this._eventHandlers.handleMouse,
+        );
+        this._canvas.removeEventListener(
+            "mousemove",
+            this._eventHandlers.handleMouse,
+        );
+        this._canvas.removeEventListener(
+            "click",
+            this._eventHandlers.handleMouse,
+        );
+        this._canvas.removeEventListener(
+            "contextmenu",
+            this._eventHandlers.handleMouse,
+        );
+        this._canvas.removeEventListener(
+            "mousedown",
+            this._eventHandlers.focusCanvas,
+        );
+        this._canvas.removeEventListener(
+            "touchstart",
+            this._eventHandlers.focusCanvas,
+        );
         this._resizeObserver.disconnect();
         this._keyboard.ungrab();
         this._gestures.detach();
@@ -630,7 +775,7 @@ export default class RFB extends EventTargetMixin {
         try {
             this._target.removeChild(this._screen);
         } catch (e) {
-            if (e.name === 'NotFoundError') {
+            if (e.name === "NotFoundError") {
                 // Some cases where the initial connection fails
                 // can disconnect before the _screen is created
             } else {
@@ -643,13 +788,17 @@ export default class RFB extends EventTargetMixin {
     }
 
     _socketOpen() {
-        if ((this._rfbConnectionState === 'connecting') &&
-            (this._rfbInitState === '')) {
-            this._rfbInitState = 'ProtocolVersion';
+        if (
+            this._rfbConnectionState === "connecting" &&
+            this._rfbInitState === ""
+        ) {
+            this._rfbInitState = "ProtocolVersion";
             Log.Debug("Starting VNC handshake");
         } else {
-            this._fail("Unexpected server connection while " +
-                       this._rfbConnectionState);
+            this._fail(
+                "Unexpected server connection while " +
+                    this._rfbConnectionState,
+            );
         }
     }
 
@@ -664,28 +813,32 @@ export default class RFB extends EventTargetMixin {
             msg += ")";
         }
         switch (this._rfbConnectionState) {
-            case 'connecting':
+            case "connecting":
                 this._fail("Connection closed " + msg);
                 break;
-            case 'connected':
+            case "connected":
                 // Handle disconnects that were initiated server-side
-                this._updateConnectionState('disconnecting');
-                this._updateConnectionState('disconnected');
+                this._updateConnectionState("disconnecting");
+                this._updateConnectionState("disconnected");
                 break;
-            case 'disconnecting':
+            case "disconnecting":
                 // Normal disconnection path
-                this._updateConnectionState('disconnected');
+                this._updateConnectionState("disconnected");
                 break;
-            case 'disconnected':
-                this._fail("Unexpected server disconnect " +
-                           "when already disconnected " + msg);
+            case "disconnected":
+                this._fail(
+                    "Unexpected server disconnect " +
+                        "when already disconnected " +
+                        msg,
+                );
                 break;
             default:
-                this._fail("Unexpected server disconnect before connecting " +
-                           msg);
+                this._fail(
+                    "Unexpected server disconnect before connecting " + msg,
+                );
                 break;
         }
-        this._sock.off('close');
+        this._sock.off("close");
         // Delete reference to raw channel to allow cleanup.
         this._rawChannel = null;
     }
@@ -704,9 +857,9 @@ export default class RFB extends EventTargetMixin {
 
     _setDesktopName(name) {
         this._fbName = name;
-        this.dispatchEvent(new CustomEvent(
-            "desktopname",
-            { detail: { name: this._fbName } }));
+        this.dispatchEvent(
+            new CustomEvent("desktopname", { detail: { name: this._fbName } }),
+        );
     }
 
     _saveExpectedClientSize() {
@@ -720,8 +873,10 @@ export default class RFB extends EventTargetMixin {
 
     _clientHasExpectedSize() {
         const [currentWidth, currentHeight] = this._currentClientSize();
-        return currentWidth == this._expectedClientWidth &&
-            currentHeight == this._expectedClientHeight;
+        return (
+            currentWidth == this._expectedClientWidth &&
+            currentHeight == this._expectedClientHeight
+        );
     }
 
     // Handle browser window resizes
@@ -764,8 +919,9 @@ export default class RFB extends EventTargetMixin {
             const size = this._screenSize();
             this._display.viewportChangeSize(size.w, size.h);
             this._fixScrollbars();
-            this._setClippingViewport(size.w < this._display.width ||
-                                      size.h < this._display.height);
+            this._setClippingViewport(
+                size.w < this._display.width || size.h < this._display.height,
+            );
         } else {
             this._setClippingViewport(false);
         }
@@ -806,10 +962,12 @@ export default class RFB extends EventTargetMixin {
         }
 
         // And no more than once every 100ms
-        if ((Date.now() - this._lastResize) < 100) {
+        if (Date.now() - this._lastResize < 100) {
             clearTimeout(this._resizeTimeout);
-            this._resizeTimeout = setTimeout(this._requestRemoteResize.bind(this),
-                                             100 - (Date.now() - this._lastResize));
+            this._resizeTimeout = setTimeout(
+                this._requestRemoteResize.bind(this),
+                100 - (Date.now() - this._lastResize),
+            );
             return;
         }
         this._resizeTimeout = null;
@@ -823,12 +981,15 @@ export default class RFB extends EventTargetMixin {
 
         this._pendingRemoteResize = true;
         this._lastResize = Date.now();
-        RFB.messages.setDesktopSize(this._sock,
-                                    Math.floor(size.w), Math.floor(size.h),
-                                    this._screenID, this._screenFlags);
+        RFB.messages.setDesktopSize(
+            this._sock,
+            Math.floor(size.w),
+            Math.floor(size.h),
+            this._screenID,
+            this._screenFlags,
+        );
 
-        Log.Debug('Requested new desktop size: ' +
-                   size.w + 'x' + size.h);
+        Log.Debug("Requested new desktop size: " + size.w + "x" + size.h);
     }
 
     // Gets the the size of the available screen
@@ -843,7 +1004,7 @@ export default class RFB extends EventTargetMixin {
         // browser smaller, despite remote resize being enabled. So to fix it
         // we temporarily toggle them off and on.
         const orig = this._screen.style.overflow;
-        this._screen.style.overflow = 'hidden';
+        this._screen.style.overflow = "hidden";
         // Force Safari to recalculate the layout by asking for
         // an element's dimensions
         this._screen.getBoundingClientRect();
@@ -866,41 +1027,53 @@ export default class RFB extends EventTargetMixin {
         }
 
         // The 'disconnected' state is permanent for each RFB object
-        if (oldstate === 'disconnected') {
+        if (oldstate === "disconnected") {
             Log.Error("Tried changing state of a disconnected RFB object");
             return;
         }
 
         // Ensure proper transitions before doing anything
         switch (state) {
-            case 'connected':
-                if (oldstate !== 'connecting') {
-                    Log.Error("Bad transition to connected state, " +
-                               "previous connection state: " + oldstate);
+            case "connected":
+                if (oldstate !== "connecting") {
+                    Log.Error(
+                        "Bad transition to connected state, " +
+                            "previous connection state: " +
+                            oldstate,
+                    );
                     return;
                 }
                 break;
 
-            case 'disconnected':
-                if (oldstate !== 'disconnecting') {
-                    Log.Error("Bad transition to disconnected state, " +
-                               "previous connection state: " + oldstate);
+            case "disconnected":
+                if (oldstate !== "disconnecting") {
+                    Log.Error(
+                        "Bad transition to disconnected state, " +
+                            "previous connection state: " +
+                            oldstate,
+                    );
                     return;
                 }
                 break;
 
-            case 'connecting':
-                if (oldstate !== '') {
-                    Log.Error("Bad transition to connecting state, " +
-                               "previous connection state: " + oldstate);
+            case "connecting":
+                if (oldstate !== "") {
+                    Log.Error(
+                        "Bad transition to connecting state, " +
+                            "previous connection state: " +
+                            oldstate,
+                    );
                     return;
                 }
                 break;
 
-            case 'disconnecting':
-                if (oldstate !== 'connected' && oldstate !== 'connecting') {
-                    Log.Error("Bad transition to disconnecting state, " +
-                               "previous connection state: " + oldstate);
+            case "disconnecting":
+                if (oldstate !== "connected" && oldstate !== "connecting") {
+                    Log.Error(
+                        "Bad transition to disconnecting state, " +
+                            "previous connection state: " +
+                            oldstate,
+                    );
                     return;
                 }
                 break;
@@ -916,37 +1089,39 @@ export default class RFB extends EventTargetMixin {
 
         Log.Debug("New state '" + state + "', was '" + oldstate + "'.");
 
-        if (this._disconnTimer && state !== 'disconnecting') {
+        if (this._disconnTimer && state !== "disconnecting") {
             Log.Debug("Clearing disconnect timer");
             clearTimeout(this._disconnTimer);
             this._disconnTimer = null;
 
             // make sure we don't get a double event
-            this._sock.off('close');
+            this._sock.off("close");
         }
 
         switch (state) {
-            case 'connecting':
+            case "connecting":
                 this._connect();
                 break;
 
-            case 'connected':
+            case "connected":
                 this.dispatchEvent(new CustomEvent("connect", { detail: {} }));
                 break;
 
-            case 'disconnecting':
+            case "disconnecting":
                 this._disconnect();
 
                 this._disconnTimer = setTimeout(() => {
                     Log.Error("Disconnection timed out.");
-                    this._updateConnectionState('disconnected');
+                    this._updateConnectionState("disconnected");
                 }, DISCONNECT_TIMEOUT * 1000);
                 break;
 
-            case 'disconnected':
-                this.dispatchEvent(new CustomEvent(
-                    "disconnect", { detail:
-                                    { clean: this._rfbCleanDisconnect } }));
+            case "disconnected":
+                this.dispatchEvent(
+                    new CustomEvent("disconnect", {
+                        detail: { clean: this._rfbCleanDisconnect },
+                    }),
+                );
                 break;
         }
     }
@@ -958,13 +1133,13 @@ export default class RFB extends EventTargetMixin {
      */
     _fail(details) {
         switch (this._rfbConnectionState) {
-            case 'disconnecting':
+            case "disconnecting":
                 Log.Error("Failed when disconnecting: " + details);
                 break;
-            case 'connected':
+            case "connected":
                 Log.Error("Failed while connected: " + details);
                 break;
-            case 'connecting':
+            case "connecting":
                 Log.Error("Failed when connecting: " + details);
                 break;
             default:
@@ -974,16 +1149,19 @@ export default class RFB extends EventTargetMixin {
         this._rfbCleanDisconnect = false; //This is sent to the UI
 
         // Transition to disconnected without waiting for socket to close
-        this._updateConnectionState('disconnecting');
-        this._updateConnectionState('disconnected');
+        this._updateConnectionState("disconnecting");
+        this._updateConnectionState("disconnected");
 
         return false;
     }
 
     _setCapability(cap, val) {
         this._capabilities[cap] = val;
-        this.dispatchEvent(new CustomEvent("capabilities",
-                                           { detail: { capabilities: this._capabilities } }));
+        this.dispatchEvent(
+            new CustomEvent("capabilities", {
+                detail: { capabilities: this._capabilities },
+            }),
+        );
     }
 
     _handleMessage() {
@@ -993,10 +1171,10 @@ export default class RFB extends EventTargetMixin {
         }
 
         switch (this._rfbConnectionState) {
-            case 'disconnected':
+            case "disconnected":
                 Log.Error("Got data while disconnected");
                 break;
-            case 'connected':
+            case "connected":
                 while (true) {
                     if (this._flushing) {
                         break;
@@ -1009,8 +1187,8 @@ export default class RFB extends EventTargetMixin {
                     }
                 }
                 break;
-            case 'connecting':
-                while (this._rfbConnectionState === 'connecting') {
+            case "connecting":
+                while (this._rfbConnectionState === "connecting") {
                     if (!this._initMsg()) {
                         break;
                     }
@@ -1028,27 +1206,37 @@ export default class RFB extends EventTargetMixin {
         // If we just pressed CapsLock, or we toggled it remotely due to it being out of sync
         // we clear the remote state so that we don't send duplicate or spurious fixes,
         // since it may take some time to receive the new remote CapsLock state.
-        if (code == 'CapsLock' && down) {
+        if (code == "CapsLock" && down) {
             this._remoteCapsLock = null;
         }
-        if (this._remoteCapsLock !== null && capslock !== null && this._remoteCapsLock !== capslock && down) {
+        if (
+            this._remoteCapsLock !== null &&
+            capslock !== null &&
+            this._remoteCapsLock !== capslock &&
+            down
+        ) {
             Log.Debug("Fixing remote caps lock");
 
-            this.sendKey(KeyTable.XK_Caps_Lock, 'CapsLock', true);
-            this.sendKey(KeyTable.XK_Caps_Lock, 'CapsLock', false);
+            this.sendKey(KeyTable.XK_Caps_Lock, "CapsLock", true);
+            this.sendKey(KeyTable.XK_Caps_Lock, "CapsLock", false);
             // We clear the remote capsLock state when we do this to prevent issues with doing this twice
             // before we receive an update of the the remote state.
             this._remoteCapsLock = null;
         }
 
         // Logic for numlock is exactly the same.
-        if (code == 'NumLock' && down) {
+        if (code == "NumLock" && down) {
             this._remoteNumLock = null;
         }
-        if (this._remoteNumLock !== null && numlock !== null && this._remoteNumLock !== numlock && down) {
+        if (
+            this._remoteNumLock !== null &&
+            numlock !== null &&
+            this._remoteNumLock !== numlock &&
+            down
+        ) {
             Log.Debug("Fixing remote num lock");
-            this.sendKey(KeyTable.XK_Num_Lock, 'NumLock', true);
-            this.sendKey(KeyTable.XK_Num_Lock, 'NumLock', false);
+            this.sendKey(KeyTable.XK_Num_Lock, "NumLock", true);
+            this.sendKey(KeyTable.XK_Num_Lock, "NumLock", false);
             this._remoteNumLock = null;
         }
         this.sendKey(keysym, code, down);
@@ -1090,7 +1278,7 @@ export default class RFB extends EventTargetMixin {
          * mouse events might be used to control the viewport
          */
 
-        if (ev.type === 'click') {
+        if (ev.type === "click") {
             /*
              * Note: This is only needed for the 'click' event as it fails
              *       to fire properly for the target element so we have
@@ -1106,23 +1294,22 @@ export default class RFB extends EventTargetMixin {
         ev.stopPropagation();
         ev.preventDefault();
 
-        if ((ev.type === 'click') || (ev.type === 'contextmenu')) {
+        if (ev.type === "click" || ev.type === "contextmenu") {
             return;
         }
 
-        let pos = clientToElement(ev.clientX, ev.clientY,
-                                  this._canvas);
+        let pos = clientToElement(ev.clientX, ev.clientY, this._canvas);
 
         let bmask = RFB._convertButtonMask(ev.buttons);
 
-        let down = ev.type == 'mousedown';
+        let down = ev.type == "mousedown";
         switch (ev.type) {
-            case 'mousedown':
-            case 'mouseup':
+            case "mousedown":
+            case "mouseup":
                 if (this.dragViewport) {
                     if (down && !this._viewportDragging) {
                         this._viewportDragging = true;
-                        this._viewportDragPos = {'x': pos.x, 'y': pos.y};
+                        this._viewportDragPos = { x: pos.x, y: pos.y };
                         this._viewportHasMoved = false;
 
                         this._flushMouseMoveTimer(pos.x, pos.y);
@@ -1144,7 +1331,7 @@ export default class RFB extends EventTargetMixin {
                         // Send the previously saved button mask, followed
                         // by the current button mask at the end of this
                         // function.
-                        this._sendMouse(pos.x, pos.y,  this._mouseButtonMask);
+                        this._sendMouse(pos.x, pos.y, this._mouseButtonMask);
                     }
                 }
                 if (down) {
@@ -1152,16 +1339,19 @@ export default class RFB extends EventTargetMixin {
                 }
                 this._handleMouseButton(pos.x, pos.y, bmask);
                 break;
-            case 'mousemove':
+            case "mousemove":
                 if (this._viewportDragging) {
                     const deltaX = this._viewportDragPos.x - pos.x;
                     const deltaY = this._viewportDragPos.y - pos.y;
 
-                    if (this._viewportHasMoved || (Math.abs(deltaX) > dragThreshold ||
-                                                   Math.abs(deltaY) > dragThreshold)) {
+                    if (
+                        this._viewportHasMoved ||
+                        Math.abs(deltaX) > dragThreshold ||
+                        Math.abs(deltaY) > dragThreshold
+                    ) {
                         this._viewportHasMoved = true;
 
-                        this._viewportDragPos = {'x': pos.x, 'y': pos.y};
+                        this._viewportDragPos = { x: pos.x, y: pos.y };
                         this._display.viewportChangePos(deltaX, deltaY);
                     }
 
@@ -1182,11 +1372,10 @@ export default class RFB extends EventTargetMixin {
     }
 
     _handleMouseMove(x, y) {
-        this._mousePos = { 'x': x, 'y': y };
+        this._mousePos = { x: x, y: y };
 
         // Limit many mouse move events to one every MOUSE_MOVE_DELAY ms
         if (this._mouseMoveTimer == null) {
-
             const timeSinceLastMove = Date.now() - this._mouseLastMoveTime;
             if (timeSinceLastMove > MOUSE_MOVE_DELAY) {
                 this._sendMouse(x, y, this._mouseButtonMask);
@@ -1202,14 +1391,21 @@ export default class RFB extends EventTargetMixin {
 
     _handleDelayedMouseMove() {
         this._mouseMoveTimer = null;
-        this._sendMouse(this._mousePos.x, this._mousePos.y,
-                        this._mouseButtonMask);
+        this._sendMouse(
+            this._mousePos.x,
+            this._mousePos.y,
+            this._mouseButtonMask,
+        );
         this._mouseLastMoveTime = Date.now();
     }
 
     _sendMouse(x, y, mask) {
-        if (this._rfbConnectionState !== 'connected') { return; }
-        if (this._viewOnly) { return; } // View only, skip mouse events
+        if (this._rfbConnectionState !== "connected") {
+            return;
+        }
+        if (this._viewOnly) {
+            return;
+        } // View only, skip mouse events
 
         // Highest bit in mask is never sent to the server
         if (mask & 0x8000) {
@@ -1219,23 +1415,34 @@ export default class RFB extends EventTargetMixin {
         let extendedMouseButtons = mask & 0x7f80;
 
         if (this._extendedPointerEventSupported && extendedMouseButtons) {
-            RFB.messages.extendedPointerEvent(this._sock, this._display.absX(x),
-                                              this._display.absY(y), mask);
+            RFB.messages.extendedPointerEvent(
+                this._sock,
+                this._display.absX(x),
+                this._display.absY(y),
+                mask,
+            );
         } else {
-            RFB.messages.pointerEvent(this._sock, this._display.absX(x),
-                                      this._display.absY(y), mask);
+            RFB.messages.pointerEvent(
+                this._sock,
+                this._display.absX(x),
+                this._display.absY(y),
+                mask,
+            );
         }
     }
 
     _handleWheel(ev) {
-        if (this._rfbConnectionState !== 'connected') { return; }
-        if (this._viewOnly) { return; } // View only, skip mouse events
+        if (this._rfbConnectionState !== "connected") {
+            return;
+        }
+        if (this._viewOnly) {
+            return;
+        } // View only, skip mouse events
 
         ev.stopPropagation();
         ev.preventDefault();
 
-        let pos = clientToElement(ev.clientX, ev.clientY,
-                                  this._canvas);
+        let pos = clientToElement(ev.clientX, ev.clientY, this._canvas);
 
         let bmask = RFB._convertButtonMask(ev.buttons);
         let dX = ev.deltaX;
@@ -1257,15 +1464,14 @@ export default class RFB extends EventTargetMixin {
         this._accumulatedWheelDeltaX += dX;
         this._accumulatedWheelDeltaY += dY;
 
-
         // Generate a mouse wheel step event when the accumulated delta
         // for one of the axes is large enough.
         if (Math.abs(this._accumulatedWheelDeltaX) >= WHEEL_STEP) {
             if (this._accumulatedWheelDeltaX < 0) {
-                this._handleMouseButton(pos.x, pos.y, bmask | 1 << 5);
+                this._handleMouseButton(pos.x, pos.y, bmask | (1 << 5));
                 this._handleMouseButton(pos.x, pos.y, bmask);
             } else if (this._accumulatedWheelDeltaX > 0) {
-                this._handleMouseButton(pos.x, pos.y, bmask | 1 << 6);
+                this._handleMouseButton(pos.x, pos.y, bmask | (1 << 6));
                 this._handleMouseButton(pos.x, pos.y, bmask);
             }
 
@@ -1273,10 +1479,10 @@ export default class RFB extends EventTargetMixin {
         }
         if (Math.abs(this._accumulatedWheelDeltaY) >= WHEEL_STEP) {
             if (this._accumulatedWheelDeltaY < 0) {
-                this._handleMouseButton(pos.x, pos.y, bmask | 1 << 3);
+                this._handleMouseButton(pos.x, pos.y, bmask | (1 << 3));
                 this._handleMouseButton(pos.x, pos.y, bmask);
             } else if (this._accumulatedWheelDeltaY > 0) {
-                this._handleMouseButton(pos.x, pos.y, bmask | 1 << 4);
+                this._handleMouseButton(pos.x, pos.y, bmask | (1 << 4));
                 this._handleMouseButton(pos.x, pos.y, bmask);
             }
 
@@ -1290,23 +1496,34 @@ export default class RFB extends EventTargetMixin {
     }
 
     _handleTapEvent(ev, bmask) {
-        let pos = clientToElement(ev.detail.clientX, ev.detail.clientY,
-                                  this._canvas);
+        let pos = clientToElement(
+            ev.detail.clientX,
+            ev.detail.clientY,
+            this._canvas,
+        );
 
         // If the user quickly taps multiple times we assume they meant to
         // hit the same spot, so slightly adjust coordinates
 
-        if ((this._gestureLastTapTime !== null) &&
-            ((Date.now() - this._gestureLastTapTime) < DOUBLE_TAP_TIMEOUT) &&
-            (this._gestureFirstDoubleTapEv.detail.type === ev.detail.type)) {
-            let dx = this._gestureFirstDoubleTapEv.detail.clientX - ev.detail.clientX;
-            let dy = this._gestureFirstDoubleTapEv.detail.clientY - ev.detail.clientY;
+        if (
+            this._gestureLastTapTime !== null &&
+            Date.now() - this._gestureLastTapTime < DOUBLE_TAP_TIMEOUT &&
+            this._gestureFirstDoubleTapEv.detail.type === ev.detail.type
+        ) {
+            let dx =
+                this._gestureFirstDoubleTapEv.detail.clientX -
+                ev.detail.clientX;
+            let dy =
+                this._gestureFirstDoubleTapEv.detail.clientY -
+                ev.detail.clientY;
             let distance = Math.hypot(dx, dy);
 
             if (distance < DOUBLE_TAP_THRESHOLD) {
-                pos = clientToElement(this._gestureFirstDoubleTapEv.detail.clientX,
-                                      this._gestureFirstDoubleTapEv.detail.clientY,
-                                      this._canvas);
+                pos = clientToElement(
+                    this._gestureFirstDoubleTapEv.detail.clientX,
+                    this._gestureFirstDoubleTapEv.detail.clientY,
+                    this._canvas,
+                );
             } else {
                 this._gestureFirstDoubleTapEv = ev;
             }
@@ -1323,138 +1540,178 @@ export default class RFB extends EventTargetMixin {
     _handleGesture(ev) {
         let magnitude;
 
-        let pos = clientToElement(ev.detail.clientX, ev.detail.clientY,
-                                  this._canvas);
+        let pos = clientToElement(
+            ev.detail.clientX,
+            ev.detail.clientY,
+            this._canvas,
+        );
         switch (ev.type) {
-            case 'gesturestart':
+            case "gesturestart":
                 switch (ev.detail.type) {
-                    case 'onetap':
+                    case "onetap":
                         this._handleTapEvent(ev, 0x1);
                         break;
-                    case 'twotap':
+                    case "twotap":
                         this._handleTapEvent(ev, 0x4);
                         break;
-                    case 'threetap':
+                    case "threetap":
                         this._handleTapEvent(ev, 0x2);
                         break;
-                    case 'drag':
+                    case "drag":
                         if (this.dragViewport) {
                             this._viewportHasMoved = false;
                             this._viewportDragging = true;
-                            this._viewportDragPos = {'x': pos.x, 'y': pos.y};
+                            this._viewportDragPos = { x: pos.x, y: pos.y };
                         } else {
                             this._fakeMouseMove(ev, pos.x, pos.y);
                             this._handleMouseButton(pos.x, pos.y, 0x1);
                         }
                         break;
-                    case 'longpress':
+                    case "longpress":
                         if (this.dragViewport) {
                             // If dragViewport is true, we need to wait to see
                             // if we have dragged outside the threshold before
                             // sending any events to the server.
                             this._viewportHasMoved = false;
-                            this._viewportDragPos = {'x': pos.x, 'y': pos.y};
+                            this._viewportDragPos = { x: pos.x, y: pos.y };
                         } else {
                             this._fakeMouseMove(ev, pos.x, pos.y);
                             this._handleMouseButton(pos.x, pos.y, 0x4);
                         }
                         break;
-                    case 'twodrag':
+                    case "twodrag":
                         this._gestureLastMagnitudeX = ev.detail.magnitudeX;
                         this._gestureLastMagnitudeY = ev.detail.magnitudeY;
                         this._fakeMouseMove(ev, pos.x, pos.y);
                         break;
-                    case 'pinch':
-                        this._gestureLastMagnitudeX = Math.hypot(ev.detail.magnitudeX,
-                                                                 ev.detail.magnitudeY);
+                    case "pinch":
+                        this._gestureLastMagnitudeX = Math.hypot(
+                            ev.detail.magnitudeX,
+                            ev.detail.magnitudeY,
+                        );
                         this._fakeMouseMove(ev, pos.x, pos.y);
                         break;
                 }
                 break;
 
-            case 'gesturemove':
+            case "gesturemove":
                 switch (ev.detail.type) {
-                    case 'onetap':
-                    case 'twotap':
-                    case 'threetap':
+                    case "onetap":
+                    case "twotap":
+                    case "threetap":
                         break;
-                    case 'drag':
-                    case 'longpress':
+                    case "drag":
+                    case "longpress":
                         if (this.dragViewport) {
                             this._viewportDragging = true;
                             const deltaX = this._viewportDragPos.x - pos.x;
                             const deltaY = this._viewportDragPos.y - pos.y;
 
-                            if (this._viewportHasMoved || (Math.abs(deltaX) > dragThreshold ||
-                                                           Math.abs(deltaY) > dragThreshold)) {
+                            if (
+                                this._viewportHasMoved ||
+                                Math.abs(deltaX) > dragThreshold ||
+                                Math.abs(deltaY) > dragThreshold
+                            ) {
                                 this._viewportHasMoved = true;
 
-                                this._viewportDragPos = {'x': pos.x, 'y': pos.y};
+                                this._viewportDragPos = { x: pos.x, y: pos.y };
                                 this._display.viewportChangePos(deltaX, deltaY);
                             }
                         } else {
                             this._fakeMouseMove(ev, pos.x, pos.y);
                         }
                         break;
-                    case 'twodrag':
+                    case "twodrag":
                         // Always scroll in the same position.
                         // We don't know if the mouse was moved so we need to move it
                         // every update.
                         this._fakeMouseMove(ev, pos.x, pos.y);
-                        while ((ev.detail.magnitudeY - this._gestureLastMagnitudeY) > GESTURE_SCRLSENS) {
+                        while (
+                            ev.detail.magnitudeY - this._gestureLastMagnitudeY >
+                            GESTURE_SCRLSENS
+                        ) {
                             this._handleMouseButton(pos.x, pos.y, 0x8);
                             this._handleMouseButton(pos.x, pos.y, 0x0);
                             this._gestureLastMagnitudeY += GESTURE_SCRLSENS;
                         }
-                        while ((ev.detail.magnitudeY - this._gestureLastMagnitudeY) < -GESTURE_SCRLSENS) {
+                        while (
+                            ev.detail.magnitudeY - this._gestureLastMagnitudeY <
+                            -GESTURE_SCRLSENS
+                        ) {
                             this._handleMouseButton(pos.x, pos.y, 0x10);
                             this._handleMouseButton(pos.x, pos.y, 0x0);
                             this._gestureLastMagnitudeY -= GESTURE_SCRLSENS;
                         }
-                        while ((ev.detail.magnitudeX - this._gestureLastMagnitudeX) > GESTURE_SCRLSENS) {
+                        while (
+                            ev.detail.magnitudeX - this._gestureLastMagnitudeX >
+                            GESTURE_SCRLSENS
+                        ) {
                             this._handleMouseButton(pos.x, pos.y, 0x20);
                             this._handleMouseButton(pos.x, pos.y, 0x0);
                             this._gestureLastMagnitudeX += GESTURE_SCRLSENS;
                         }
-                        while ((ev.detail.magnitudeX - this._gestureLastMagnitudeX) < -GESTURE_SCRLSENS) {
+                        while (
+                            ev.detail.magnitudeX - this._gestureLastMagnitudeX <
+                            -GESTURE_SCRLSENS
+                        ) {
                             this._handleMouseButton(pos.x, pos.y, 0x40);
                             this._handleMouseButton(pos.x, pos.y, 0x0);
                             this._gestureLastMagnitudeX -= GESTURE_SCRLSENS;
                         }
                         break;
-                    case 'pinch':
+                    case "pinch":
                         // Always scroll in the same position.
                         // We don't know if the mouse was moved so we need to move it
                         // every update.
                         this._fakeMouseMove(ev, pos.x, pos.y);
-                        magnitude = Math.hypot(ev.detail.magnitudeX, ev.detail.magnitudeY);
-                        if (Math.abs(magnitude - this._gestureLastMagnitudeX) > GESTURE_ZOOMSENS) {
-                            this._handleKeyEvent(KeyTable.XK_Control_L, "ControlLeft", true);
-                            while ((magnitude - this._gestureLastMagnitudeX) > GESTURE_ZOOMSENS) {
+                        magnitude = Math.hypot(
+                            ev.detail.magnitudeX,
+                            ev.detail.magnitudeY,
+                        );
+                        if (
+                            Math.abs(magnitude - this._gestureLastMagnitudeX) >
+                            GESTURE_ZOOMSENS
+                        ) {
+                            this._handleKeyEvent(
+                                KeyTable.XK_Control_L,
+                                "ControlLeft",
+                                true,
+                            );
+                            while (
+                                magnitude - this._gestureLastMagnitudeX >
+                                GESTURE_ZOOMSENS
+                            ) {
                                 this._handleMouseButton(pos.x, pos.y, 0x8);
                                 this._handleMouseButton(pos.x, pos.y, 0x0);
                                 this._gestureLastMagnitudeX += GESTURE_ZOOMSENS;
                             }
-                            while ((magnitude -  this._gestureLastMagnitudeX) < -GESTURE_ZOOMSENS) {
+                            while (
+                                magnitude - this._gestureLastMagnitudeX <
+                                -GESTURE_ZOOMSENS
+                            ) {
                                 this._handleMouseButton(pos.x, pos.y, 0x10);
                                 this._handleMouseButton(pos.x, pos.y, 0x0);
                                 this._gestureLastMagnitudeX -= GESTURE_ZOOMSENS;
                             }
                         }
-                        this._handleKeyEvent(KeyTable.XK_Control_L, "ControlLeft", false);
+                        this._handleKeyEvent(
+                            KeyTable.XK_Control_L,
+                            "ControlLeft",
+                            false,
+                        );
                         break;
                 }
                 break;
 
-            case 'gestureend':
+            case "gestureend":
                 switch (ev.detail.type) {
-                    case 'onetap':
-                    case 'twotap':
-                    case 'threetap':
-                    case 'pinch':
-                    case 'twodrag':
+                    case "onetap":
+                    case "twotap":
+                    case "threetap":
+                    case "pinch":
+                    case "twodrag":
                         break;
-                    case 'drag':
+                    case "drag":
                         if (this.dragViewport) {
                             this._viewportDragging = false;
                         } else {
@@ -1462,7 +1719,7 @@ export default class RFB extends EventTargetMixin {
                             this._handleMouseButton(pos.x, pos.y, 0x0);
                         }
                         break;
-                    case 'longpress':
+                    case "longpress":
                         if (this._viewportHasMoved) {
                             // We don't want to send any events if we have moved
                             // our viewport
@@ -1506,21 +1763,21 @@ export default class RFB extends EventTargetMixin {
         Log.Info("Server ProtocolVersion: " + sversion);
         let isRepeater = 0;
         switch (sversion) {
-            case "000.000":  // UltraVNC repeater
+            case "000.000": // UltraVNC repeater
                 isRepeater = 1;
                 break;
             case "003.003":
-            case "003.006":  // UltraVNC
+            case "003.006": // UltraVNC
                 this._rfbVersion = 3.3;
                 break;
             case "003.007":
                 this._rfbVersion = 3.7;
                 break;
             case "003.008":
-            case "003.889":  // Apple Remote Desktop
-            case "004.000":  // Intel AMT KVM
-            case "004.001":  // RealVNC 4.6
-            case "005.000":  // RealVNC 5.3
+            case "003.889": // Apple Remote Desktop
+            case "004.000": // Intel AMT KVM
+            case "004.001": // RealVNC 4.6
+            case "005.000": // RealVNC 5.3
                 this._rfbVersion = 3.8;
                 break;
             default:
@@ -1541,13 +1798,16 @@ export default class RFB extends EventTargetMixin {
             this._rfbVersion = this._rfbMaxVersion;
         }
 
-        const cversion = "00" + parseInt(this._rfbVersion, 10) +
-                       ".00" + ((this._rfbVersion * 10) % 10);
+        const cversion =
+            "00" +
+            parseInt(this._rfbVersion, 10) +
+            ".00" +
+            ((this._rfbVersion * 10) % 10);
         this._sock.sQpushString("RFB " + cversion + "\n");
         this._sock.flush();
-        Log.Debug('Sent ProtocolVersion: ' + cversion);
+        Log.Debug("Sent ProtocolVersion: " + cversion);
 
-        this._rfbInitState = 'Security';
+        this._rfbInitState = "Security";
     }
 
     _isSupportedSecurityType(type) {
@@ -1570,7 +1830,9 @@ export default class RFB extends EventTargetMixin {
         if (this._rfbVersion >= 3.7) {
             // Server sends supported list, client decides
             const numTypes = this._sock.rQshift8();
-            if (this._sock.rQwait("security type", numTypes, 1)) { return false; }
+            if (this._sock.rQwait("security type", numTypes, 1)) {
+                return false;
+            }
 
             if (numTypes === 0) {
                 this._rfbInitState = "SecurityReason";
@@ -1593,14 +1855,18 @@ export default class RFB extends EventTargetMixin {
             }
 
             if (this._rfbAuthScheme === -1) {
-                return this._fail("Unsupported security types (types: " + types + ")");
+                return this._fail(
+                    "Unsupported security types (types: " + types + ")",
+                );
             }
 
             this._sock.sQpush8(this._rfbAuthScheme);
             this._sock.flush();
         } else {
             // Server decides
-            if (this._sock.rQwait("security scheme", 4)) { return false; }
+            if (this._sock.rQwait("security scheme", 4)) {
+                return false;
+            }
             this._rfbAuthScheme = this._sock.rQshift32();
 
             if (this._rfbAuthScheme == 0) {
@@ -1611,8 +1877,8 @@ export default class RFB extends EventTargetMixin {
             }
         }
 
-        this._rfbInitState = 'Authentication';
-        Log.Debug('Authenticating using scheme: ' + this._rfbAuthScheme);
+        this._rfbInitState = "Authentication";
+        Log.Debug("Authenticating using scheme: " + this._rfbAuthScheme);
 
         return true;
     }
@@ -1625,37 +1891,51 @@ export default class RFB extends EventTargetMixin {
         let reason = "";
 
         if (strlen > 0) {
-            if (this._sock.rQwait("reason", strlen, 4)) { return false; }
+            if (this._sock.rQwait("reason", strlen, 4)) {
+                return false;
+            }
             reason = this._sock.rQshiftStr(strlen);
         }
 
         if (reason !== "") {
-            this.dispatchEvent(new CustomEvent(
-                "securityfailure",
-                { detail: { status: this._securityStatus,
-                            reason: reason } }));
+            this.dispatchEvent(
+                new CustomEvent("securityfailure", {
+                    detail: { status: this._securityStatus, reason: reason },
+                }),
+            );
 
-            return this._fail("Security negotiation failed on " +
-                              this._securityContext +
-                              " (reason: " + reason + ")");
+            return this._fail(
+                "Security negotiation failed on " +
+                    this._securityContext +
+                    " (reason: " +
+                    reason +
+                    ")",
+            );
         } else {
-            this.dispatchEvent(new CustomEvent(
-                "securityfailure",
-                { detail: { status: this._securityStatus } }));
+            this.dispatchEvent(
+                new CustomEvent("securityfailure", {
+                    detail: { status: this._securityStatus },
+                }),
+            );
 
-            return this._fail("Security negotiation failed on " +
-                              this._securityContext);
+            return this._fail(
+                "Security negotiation failed on " + this._securityContext,
+            );
         }
     }
 
     // authentication
     _negotiateXvpAuth() {
-        if (this._rfbCredentials.username === undefined ||
+        if (
+            this._rfbCredentials.username === undefined ||
             this._rfbCredentials.password === undefined ||
-            this._rfbCredentials.target === undefined) {
-            this.dispatchEvent(new CustomEvent(
-                "credentialsrequired",
-                { detail: { types: ["username", "password", "target"] } }));
+            this._rfbCredentials.target === undefined
+        ) {
+            this.dispatchEvent(
+                new CustomEvent("credentialsrequired", {
+                    detail: { types: ["username", "password", "target"] },
+                }),
+            );
             return false;
         }
 
@@ -1673,16 +1953,19 @@ export default class RFB extends EventTargetMixin {
 
     // VeNCrypt authentication, currently only supports version 0.2 and only Plain subtype
     _negotiateVeNCryptAuth() {
-
         // waiting for VeNCrypt version
         if (this._rfbVeNCryptState == 0) {
-            if (this._sock.rQwait("vencrypt version", 2)) { return false; }
+            if (this._sock.rQwait("vencrypt version", 2)) {
+                return false;
+            }
 
             const major = this._sock.rQshift8();
             const minor = this._sock.rQshift8();
 
             if (!(major == 0 && minor == 2)) {
-                return this._fail("Unsupported VeNCrypt version " + major + "." + minor);
+                return this._fail(
+                    "Unsupported VeNCrypt version " + major + "." + minor,
+                );
             }
 
             this._sock.sQpush8(0);
@@ -1693,7 +1976,9 @@ export default class RFB extends EventTargetMixin {
 
         // waiting for ACK
         if (this._rfbVeNCryptState == 1) {
-            if (this._sock.rQwait("vencrypt ack", 1)) { return false; }
+            if (this._sock.rQwait("vencrypt ack", 1)) {
+                return false;
+            }
 
             const res = this._sock.rQshift8();
 
@@ -1706,8 +1991,11 @@ export default class RFB extends EventTargetMixin {
         // must fall through here (i.e. no "else if"), beacause we may have already received
         // the subtypes length and won't be called again
 
-        if (this._rfbVeNCryptState == 2) { // waiting for subtypes length
-            if (this._sock.rQwait("vencrypt subtypes length", 1)) { return false; }
+        if (this._rfbVeNCryptState == 2) {
+            // waiting for subtypes length
+            if (this._sock.rQwait("vencrypt subtypes length", 1)) {
+                return false;
+            }
 
             const subtypesLength = this._sock.rQshift8();
             if (subtypesLength < 1) {
@@ -1720,7 +2008,14 @@ export default class RFB extends EventTargetMixin {
 
         // waiting for subtypes list
         if (this._rfbVeNCryptState == 3) {
-            if (this._sock.rQwait("vencrypt subtypes", 4 * this._rfbVeNCryptSubtypesLength)) { return false; }
+            if (
+                this._sock.rQwait(
+                    "vencrypt subtypes",
+                    4 * this._rfbVeNCryptSubtypesLength,
+                )
+            ) {
+                return false;
+            }
 
             const subtypes = [];
             for (let i = 0; i < this._rfbVeNCryptSubtypesLength; i++) {
@@ -1743,7 +2038,9 @@ export default class RFB extends EventTargetMixin {
             }
 
             if (this._rfbAuthScheme === -1) {
-                return this._fail("Unsupported security types (types: " + subtypes + ")");
+                return this._fail(
+                    "Unsupported security types (types: " + subtypes + ")",
+                );
             }
 
             this._sock.sQpush32(this._rfbAuthScheme);
@@ -1755,11 +2052,15 @@ export default class RFB extends EventTargetMixin {
     }
 
     _negotiatePlainAuth() {
-        if (this._rfbCredentials.username === undefined ||
-            this._rfbCredentials.password === undefined) {
-            this.dispatchEvent(new CustomEvent(
-                "credentialsrequired",
-                { detail: { types: ["username", "password"] } }));
+        if (
+            this._rfbCredentials.username === undefined ||
+            this._rfbCredentials.password === undefined
+        ) {
+            this.dispatchEvent(
+                new CustomEvent("credentialsrequired", {
+                    detail: { types: ["username", "password"] },
+                }),
+            );
             return false;
         }
 
@@ -1777,17 +2078,23 @@ export default class RFB extends EventTargetMixin {
     }
 
     _negotiateStdVNCAuth() {
-        if (this._sock.rQwait("auth challenge", 16)) { return false; }
+        if (this._sock.rQwait("auth challenge", 16)) {
+            return false;
+        }
 
         if (this._rfbCredentials.password === undefined) {
-            this.dispatchEvent(new CustomEvent(
-                "credentialsrequired",
-                { detail: { types: ["password"] } }));
+            this.dispatchEvent(
+                new CustomEvent("credentialsrequired", {
+                    detail: { types: ["password"] },
+                }),
+            );
             return false;
         }
 
         // TODO(directxman12): make genDES not require an Array
-        const challenge = Array.prototype.slice.call(this._sock.rQshiftBytes(16));
+        const challenge = Array.prototype.slice.call(
+            this._sock.rQshiftBytes(16),
+        );
         const response = RFB.genDES(this._rfbCredentials.password, challenge);
         this._sock.sQpushBytes(response);
         this._sock.flush();
@@ -1796,17 +2103,22 @@ export default class RFB extends EventTargetMixin {
     }
 
     _negotiateARDAuth() {
-
-        if (this._rfbCredentials.username === undefined ||
-            this._rfbCredentials.password === undefined) {
-            this.dispatchEvent(new CustomEvent(
-                "credentialsrequired",
-                { detail: { types: ["username", "password"] } }));
+        if (
+            this._rfbCredentials.username === undefined ||
+            this._rfbCredentials.password === undefined
+        ) {
+            this.dispatchEvent(
+                new CustomEvent("credentialsrequired", {
+                    detail: { types: ["username", "password"] },
+                }),
+            );
             return false;
         }
 
-        if (this._rfbCredentials.ardPublicKey != undefined &&
-            this._rfbCredentials.ardCredentials != undefined) {
+        if (
+            this._rfbCredentials.ardPublicKey != undefined &&
+            this._rfbCredentials.ardCredentials != undefined
+        ) {
             // if the async web crypto is done return the results
             this._sock.sQpushBytes(this._rfbCredentials.ardCredentials);
             this._sock.sQpushBytes(this._rfbCredentials.ardPublicKey);
@@ -1817,32 +2129,51 @@ export default class RFB extends EventTargetMixin {
             return true;
         }
 
-        if (this._sock.rQwait("read ard", 4)) { return false; }
+        if (this._sock.rQwait("read ard", 4)) {
+            return false;
+        }
 
-        let generator = this._sock.rQshiftBytes(2);   // DH base generator value
+        let generator = this._sock.rQshiftBytes(2); // DH base generator value
 
         let keyLength = this._sock.rQshift16();
 
-        if (this._sock.rQwait("read ard keylength", keyLength*2, 4)) { return false; }
+        if (this._sock.rQwait("read ard keylength", keyLength * 2, 4)) {
+            return false;
+        }
 
         // read the server values
-        let prime = this._sock.rQshiftBytes(keyLength);  // predetermined prime modulus
+        let prime = this._sock.rQshiftBytes(keyLength); // predetermined prime modulus
         let serverPublicKey = this._sock.rQshiftBytes(keyLength); // other party's public key
 
         let clientKey = legacyCrypto.generateKey(
-            { name: "DH", g: generator, p: prime }, false, ["deriveBits"]);
+            { name: "DH", g: generator, p: prime },
+            false,
+            ["deriveBits"],
+        );
         this._negotiateARDAuthAsync(keyLength, serverPublicKey, clientKey);
 
         return false;
     }
 
     async _negotiateARDAuthAsync(keyLength, serverPublicKey, clientKey) {
-        const clientPublicKey = legacyCrypto.exportKey("raw", clientKey.publicKey);
+        const clientPublicKey = legacyCrypto.exportKey(
+            "raw",
+            clientKey.publicKey,
+        );
         const sharedKey = legacyCrypto.deriveBits(
-            { name: "DH", public: serverPublicKey }, clientKey.privateKey, keyLength * 8);
+            { name: "DH", public: serverPublicKey },
+            clientKey.privateKey,
+            keyLength * 8,
+        );
 
-        const username = encodeUTF8(this._rfbCredentials.username).substring(0, 63);
-        const password = encodeUTF8(this._rfbCredentials.password).substring(0, 63);
+        const username = encodeUTF8(this._rfbCredentials.username).substring(
+            0,
+            63,
+        );
+        const password = encodeUTF8(this._rfbCredentials.password).substring(
+            0,
+            63,
+        );
 
         const credentials = window.crypto.getRandomValues(new Uint8Array(128));
         for (let i = 0; i < username.length; i++) {
@@ -1856,8 +2187,17 @@ export default class RFB extends EventTargetMixin {
 
         const key = await legacyCrypto.digest("MD5", sharedKey);
         const cipher = await legacyCrypto.importKey(
-            "raw", key, { name: "AES-ECB" }, false, ["encrypt"]);
-        const encrypted = await legacyCrypto.encrypt({ name: "AES-ECB" }, cipher, credentials);
+            "raw",
+            key,
+            { name: "AES-ECB" },
+            false,
+            ["encrypt"],
+        );
+        const encrypted = await legacyCrypto.encrypt(
+            { name: "AES-ECB" },
+            cipher,
+            credentials,
+        );
 
         this._rfbCredentials.ardCredentials = encrypted;
         this._rfbCredentials.ardPublicKey = clientPublicKey;
@@ -1866,11 +2206,15 @@ export default class RFB extends EventTargetMixin {
     }
 
     _negotiateTightUnixAuth() {
-        if (this._rfbCredentials.username === undefined ||
-            this._rfbCredentials.password === undefined) {
-            this.dispatchEvent(new CustomEvent(
-                "credentialsrequired",
-                { detail: { types: ["username", "password"] } }));
+        if (
+            this._rfbCredentials.username === undefined ||
+            this._rfbCredentials.password === undefined
+        ) {
+            this.dispatchEvent(
+                new CustomEvent("credentialsrequired", {
+                    detail: { types: ["username", "password"] },
+                }),
+            );
             return false;
         }
 
@@ -1886,7 +2230,7 @@ export default class RFB extends EventTargetMixin {
 
     _negotiateTightTunnels(numTunnels) {
         const clientSupportedTunnelTypes = {
-            0: { vendor: 'TGHT', signature: 'NOTUNNEL' }
+            0: { vendor: "TGHT", signature: "NOTUNNEL" },
         };
         const serverSupportedTunnelTypes = {};
         // receive tunnel capabilities
@@ -1894,7 +2238,10 @@ export default class RFB extends EventTargetMixin {
             const capCode = this._sock.rQshift32();
             const capVendor = this._sock.rQshiftStr(4);
             const capSignature = this._sock.rQshiftStr(8);
-            serverSupportedTunnelTypes[capCode] = { vendor: capVendor, signature: capSignature };
+            serverSupportedTunnelTypes[capCode] = {
+                vendor: capVendor,
+                signature: capSignature,
+            };
         }
 
         Log.Debug("Server Tight tunnel types: " + serverSupportedTunnelTypes);
@@ -1902,58 +2249,84 @@ export default class RFB extends EventTargetMixin {
         // Siemens touch panels have a VNC server that supports NOTUNNEL,
         // but forgets to advertise it. Try to detect such servers by
         // looking for their custom tunnel type.
-        if (serverSupportedTunnelTypes[1] &&
-            (serverSupportedTunnelTypes[1].vendor === "SICR") &&
-            (serverSupportedTunnelTypes[1].signature === "SCHANNEL")) {
+        if (
+            serverSupportedTunnelTypes[1] &&
+            serverSupportedTunnelTypes[1].vendor === "SICR" &&
+            serverSupportedTunnelTypes[1].signature === "SCHANNEL"
+        ) {
             Log.Debug("Detected Siemens server. Assuming NOTUNNEL support.");
-            serverSupportedTunnelTypes[0] = { vendor: 'TGHT', signature: 'NOTUNNEL' };
+            serverSupportedTunnelTypes[0] = {
+                vendor: "TGHT",
+                signature: "NOTUNNEL",
+            };
         }
 
         // choose the notunnel type
         if (serverSupportedTunnelTypes[0]) {
-            if (serverSupportedTunnelTypes[0].vendor != clientSupportedTunnelTypes[0].vendor ||
-                serverSupportedTunnelTypes[0].signature != clientSupportedTunnelTypes[0].signature) {
-                return this._fail("Client's tunnel type had the incorrect " +
-                                  "vendor or signature");
+            if (
+                serverSupportedTunnelTypes[0].vendor !=
+                    clientSupportedTunnelTypes[0].vendor ||
+                serverSupportedTunnelTypes[0].signature !=
+                    clientSupportedTunnelTypes[0].signature
+            ) {
+                return this._fail(
+                    "Client's tunnel type had the incorrect " +
+                        "vendor or signature",
+                );
             }
             Log.Debug("Selected tunnel type: " + clientSupportedTunnelTypes[0]);
             this._sock.sQpush32(0); // use NOTUNNEL
             this._sock.flush();
             return false; // wait until we receive the sub auth count to continue
         } else {
-            return this._fail("Server wanted tunnels, but doesn't support " +
-                              "the notunnel type");
+            return this._fail(
+                "Server wanted tunnels, but doesn't support " +
+                    "the notunnel type",
+            );
         }
     }
 
     _negotiateTightAuth() {
-        if (!this._rfbTightVNC) {  // first pass, do the tunnel negotiation
-            if (this._sock.rQwait("num tunnels", 4)) { return false; }
+        if (!this._rfbTightVNC) {
+            // first pass, do the tunnel negotiation
+            if (this._sock.rQwait("num tunnels", 4)) {
+                return false;
+            }
             const numTunnels = this._sock.rQshift32();
-            if (numTunnels > 0 && this._sock.rQwait("tunnel capabilities", 16 * numTunnels, 4)) { return false; }
+            if (
+                numTunnels > 0 &&
+                this._sock.rQwait("tunnel capabilities", 16 * numTunnels, 4)
+            ) {
+                return false;
+            }
 
             this._rfbTightVNC = true;
 
             if (numTunnels > 0) {
                 this._negotiateTightTunnels(numTunnels);
-                return false;  // wait until we receive the sub auth to continue
+                return false; // wait until we receive the sub auth to continue
             }
         }
 
         // second pass, do the sub-auth negotiation
-        if (this._sock.rQwait("sub auth count", 4)) { return false; }
+        if (this._sock.rQwait("sub auth count", 4)) {
+            return false;
+        }
         const subAuthCount = this._sock.rQshift32();
-        if (subAuthCount === 0) {  // empty sub-auth list received means 'no auth' subtype selected
-            this._rfbInitState = 'SecurityResult';
+        if (subAuthCount === 0) {
+            // empty sub-auth list received means 'no auth' subtype selected
+            this._rfbInitState = "SecurityResult";
             return true;
         }
 
-        if (this._sock.rQwait("sub auth capabilities", 16 * subAuthCount, 4)) { return false; }
+        if (this._sock.rQwait("sub auth capabilities", 16 * subAuthCount, 4)) {
+            return false;
+        }
 
         const clientSupportedTypes = {
-            'STDVNOAUTH__': 1,
-            'STDVVNCAUTH_': 2,
-            'TGHTULGNAUTH': 129
+            STDVNOAUTH__: 1,
+            STDVVNCAUTH_: 2,
+            TGHTULGNAUTH: 129,
         };
 
         const serverSupportedTypes = [];
@@ -1973,18 +2346,22 @@ export default class RFB extends EventTargetMixin {
                 Log.Debug("Selected authentication type: " + authType);
 
                 switch (authType) {
-                    case 'STDVNOAUTH__':  // no auth
-                        this._rfbInitState = 'SecurityResult';
+                    case "STDVNOAUTH__": // no auth
+                        this._rfbInitState = "SecurityResult";
                         return true;
-                    case 'STDVVNCAUTH_':
+                    case "STDVVNCAUTH_":
                         this._rfbAuthScheme = securityTypeVNCAuth;
                         return true;
-                    case 'TGHTULGNAUTH':
+                    case "TGHTULGNAUTH":
                         this._rfbAuthScheme = securityTypeUnixLogon;
                         return true;
                     default:
-                        return this._fail("Unsupported tiny auth scheme " +
-                                          "(scheme: " + authType + ")");
+                        return this._fail(
+                            "Unsupported tiny auth scheme " +
+                                "(scheme: " +
+                                authType +
+                                ")",
+                        );
                 }
             }
         }
@@ -2002,15 +2379,23 @@ export default class RFB extends EventTargetMixin {
 
     _negotiateRA2neAuth() {
         if (this._rfbRSAAESAuthenticationState === null) {
-            this._rfbRSAAESAuthenticationState = new RSAAESAuthenticationState(this._sock, () => this._rfbCredentials);
+            this._rfbRSAAESAuthenticationState = new RSAAESAuthenticationState(
+                this._sock,
+                () => this._rfbCredentials,
+            );
             this._rfbRSAAESAuthenticationState.addEventListener(
-                "serververification", this._eventHandlers.handleRSAAESServerVerification);
+                "serververification",
+                this._eventHandlers.handleRSAAESServerVerification,
+            );
             this._rfbRSAAESAuthenticationState.addEventListener(
-                "credentialsrequired", this._eventHandlers.handleRSAAESCredentialsRequired);
+                "credentialsrequired",
+                this._eventHandlers.handleRSAAESCredentialsRequired,
+            );
         }
         this._rfbRSAAESAuthenticationState.checkInternalEvents();
         if (!this._rfbRSAAESAuthenticationState.hasStarted) {
-            this._rfbRSAAESAuthenticationState.negotiateRA2neAuthAsync()
+            this._rfbRSAAESAuthenticationState
+                .negotiateRA2neAuthAsync()
                 .catch((e) => {
                     if (e.message !== "disconnect normally") {
                         this._fail(e.message);
@@ -2019,11 +2404,16 @@ export default class RFB extends EventTargetMixin {
                 .then(() => {
                     this._rfbInitState = "SecurityResult";
                     return true;
-                }).finally(() => {
+                })
+                .finally(() => {
                     this._rfbRSAAESAuthenticationState.removeEventListener(
-                        "serververification", this._eventHandlers.handleRSAAESServerVerification);
+                        "serververification",
+                        this._eventHandlers.handleRSAAESServerVerification,
+                    );
                     this._rfbRSAAESAuthenticationState.removeEventListener(
-                        "credentialsrequired", this._eventHandlers.handleRSAAESCredentialsRequired);
+                        "credentialsrequired",
+                        this._eventHandlers.handleRSAAESCredentialsRequired,
+                    );
                     this._rfbRSAAESAuthenticationState = null;
                 });
         }
@@ -2031,26 +2421,52 @@ export default class RFB extends EventTargetMixin {
     }
 
     _negotiateMSLogonIIAuth() {
-        if (this._sock.rQwait("mslogonii dh param", 24)) { return false; }
+        if (this._sock.rQwait("mslogonii dh param", 24)) {
+            return false;
+        }
 
-        if (this._rfbCredentials.username === undefined ||
-            this._rfbCredentials.password === undefined) {
-            this.dispatchEvent(new CustomEvent(
-                "credentialsrequired",
-                { detail: { types: ["username", "password"] } }));
+        if (
+            this._rfbCredentials.username === undefined ||
+            this._rfbCredentials.password === undefined
+        ) {
+            this.dispatchEvent(
+                new CustomEvent("credentialsrequired", {
+                    detail: { types: ["username", "password"] },
+                }),
+            );
             return false;
         }
 
         const g = this._sock.rQshiftBytes(8);
         const p = this._sock.rQshiftBytes(8);
         const A = this._sock.rQshiftBytes(8);
-        const dhKey = legacyCrypto.generateKey({ name: "DH", g: g, p: p }, true, ["deriveBits"]);
+        const dhKey = legacyCrypto.generateKey(
+            { name: "DH", g: g, p: p },
+            true,
+            ["deriveBits"],
+        );
         const B = legacyCrypto.exportKey("raw", dhKey.publicKey);
-        const secret = legacyCrypto.deriveBits({ name: "DH", public: A }, dhKey.privateKey, 64);
+        const secret = legacyCrypto.deriveBits(
+            { name: "DH", public: A },
+            dhKey.privateKey,
+            64,
+        );
 
-        const key = legacyCrypto.importKey("raw", secret, { name: "DES-CBC" }, false, ["encrypt"]);
-        const username = encodeUTF8(this._rfbCredentials.username).substring(0, 255);
-        const password = encodeUTF8(this._rfbCredentials.password).substring(0, 63);
+        const key = legacyCrypto.importKey(
+            "raw",
+            secret,
+            { name: "DES-CBC" },
+            false,
+            ["encrypt"],
+        );
+        const username = encodeUTF8(this._rfbCredentials.username).substring(
+            0,
+            255,
+        );
+        const password = encodeUTF8(this._rfbCredentials.password).substring(
+            0,
+            63,
+        );
         let usernameBytes = new Uint8Array(256);
         let passwordBytes = new Uint8Array(64);
         window.crypto.getRandomValues(usernameBytes);
@@ -2063,8 +2479,16 @@ export default class RFB extends EventTargetMixin {
             passwordBytes[i] = password.charCodeAt(i);
         }
         passwordBytes[password.length] = 0;
-        usernameBytes = legacyCrypto.encrypt({ name: "DES-CBC", iv: secret }, key, usernameBytes);
-        passwordBytes = legacyCrypto.encrypt({ name: "DES-CBC", iv: secret }, key, passwordBytes);
+        usernameBytes = legacyCrypto.encrypt(
+            { name: "DES-CBC", iv: secret },
+            key,
+            usernameBytes,
+        );
+        passwordBytes = legacyCrypto.encrypt(
+            { name: "DES-CBC", iv: secret },
+            key,
+            passwordBytes,
+        );
         this._sock.sQpushBytes(B);
         this._sock.sQpushBytes(usernameBytes);
         this._sock.sQpushBytes(passwordBytes);
@@ -2077,9 +2501,9 @@ export default class RFB extends EventTargetMixin {
         switch (this._rfbAuthScheme) {
             case securityTypeNone:
                 if (this._rfbVersion >= 3.8) {
-                    this._rfbInitState = 'SecurityResult';
+                    this._rfbInitState = "SecurityResult";
                 } else {
-                    this._rfbInitState = 'ClientInitialisation';
+                    this._rfbInitState = "ClientInitialisation";
                 }
                 return true;
 
@@ -2111,19 +2535,25 @@ export default class RFB extends EventTargetMixin {
                 return this._negotiateMSLogonIIAuth();
 
             default:
-                return this._fail("Unsupported auth scheme (scheme: " +
-                                  this._rfbAuthScheme + ")");
+                return this._fail(
+                    "Unsupported auth scheme (scheme: " +
+                        this._rfbAuthScheme +
+                        ")",
+                );
         }
     }
 
     _handleSecurityResult() {
-        if (this._sock.rQwait('VNC auth response ', 4)) { return false; }
+        if (this._sock.rQwait("VNC auth response ", 4)) {
+            return false;
+        }
 
         const status = this._sock.rQshift32();
 
-        if (status === 0) { // OK
-            this._rfbInitState = 'ClientInitialisation';
-            Log.Debug('Authentication OK');
+        if (status === 0) {
+            // OK
+            this._rfbInitState = "ClientInitialisation";
+            Log.Debug("Authentication OK");
             return true;
         } else {
             if (this._rfbVersion >= 3.8) {
@@ -2132,9 +2562,11 @@ export default class RFB extends EventTargetMixin {
                 this._securityStatus = status;
                 return true;
             } else {
-                this.dispatchEvent(new CustomEvent(
-                    "securityfailure",
-                    { detail: { status: status } }));
+                this.dispatchEvent(
+                    new CustomEvent("securityfailure", {
+                        detail: { status: status },
+                    }),
+                );
 
                 return this._fail("Security handshake failed");
             }
@@ -2142,45 +2574,66 @@ export default class RFB extends EventTargetMixin {
     }
 
     _negotiateServerInit() {
-        if (this._sock.rQwait("server initialization", 24)) { return false; }
+        if (this._sock.rQwait("server initialization", 24)) {
+            return false;
+        }
 
         /* Screen size */
         const width = this._sock.rQshift16();
         const height = this._sock.rQshift16();
 
         /* PIXEL_FORMAT */
-        const bpp         = this._sock.rQshift8();
-        const depth       = this._sock.rQshift8();
-        const bigEndian  = this._sock.rQshift8();
-        const trueColor  = this._sock.rQshift8();
+        const bpp = this._sock.rQshift8();
+        const depth = this._sock.rQshift8();
+        const bigEndian = this._sock.rQshift8();
+        const trueColor = this._sock.rQshift8();
 
-        const redMax     = this._sock.rQshift16();
-        const greenMax   = this._sock.rQshift16();
-        const blueMax    = this._sock.rQshift16();
-        const redShift   = this._sock.rQshift8();
+        const redMax = this._sock.rQshift16();
+        const greenMax = this._sock.rQshift16();
+        const blueMax = this._sock.rQshift16();
+        const redShift = this._sock.rQshift8();
         const greenShift = this._sock.rQshift8();
-        const blueShift  = this._sock.rQshift8();
-        this._sock.rQskipBytes(3);  // padding
+        const blueShift = this._sock.rQshift8();
+        this._sock.rQskipBytes(3); // padding
 
         // NB(directxman12): we don't want to call any callbacks or print messages until
         //                   *after* we're past the point where we could backtrack
 
         /* Connection name/title */
         const nameLength = this._sock.rQshift32();
-        if (this._sock.rQwait('server init name', nameLength, 24)) { return false; }
+        if (this._sock.rQwait("server init name", nameLength, 24)) {
+            return false;
+        }
         let name = this._sock.rQshiftStr(nameLength);
         name = decodeUTF8(name, true);
 
         if (this._rfbTightVNC) {
-            if (this._sock.rQwait('TightVNC extended server init header', 8, 24 + nameLength)) { return false; }
+            if (
+                this._sock.rQwait(
+                    "TightVNC extended server init header",
+                    8,
+                    24 + nameLength,
+                )
+            ) {
+                return false;
+            }
             // In TightVNC mode, ServerInit message is extended
             const numServerMessages = this._sock.rQshift16();
             const numClientMessages = this._sock.rQshift16();
             const numEncodings = this._sock.rQshift16();
-            this._sock.rQskipBytes(2);  // padding
+            this._sock.rQskipBytes(2); // padding
 
-            const totalMessagesLength = (numServerMessages + numClientMessages + numEncodings) * 16;
-            if (this._sock.rQwait('TightVNC extended server init header', totalMessagesLength, 32 + nameLength)) { return false; }
+            const totalMessagesLength =
+                (numServerMessages + numClientMessages + numEncodings) * 16;
+            if (
+                this._sock.rQwait(
+                    "TightVNC extended server init header",
+                    totalMessagesLength,
+                    32 + nameLength,
+                )
+            ) {
+                return false;
+            }
 
             // we don't actually do anything with the capability information that TIGHT sends,
             // so we just skip the all of this.
@@ -2197,35 +2650,62 @@ export default class RFB extends EventTargetMixin {
 
         // NB(directxman12): these are down here so that we don't run them multiple times
         //                   if we backtrack
-        Log.Info("Screen: " + width + "x" + height +
-                  ", bpp: " + bpp + ", depth: " + depth +
-                  ", bigEndian: " + bigEndian +
-                  ", trueColor: " + trueColor +
-                  ", redMax: " + redMax +
-                  ", greenMax: " + greenMax +
-                  ", blueMax: " + blueMax +
-                  ", redShift: " + redShift +
-                  ", greenShift: " + greenShift +
-                  ", blueShift: " + blueShift);
+        Log.Info(
+            "Screen: " +
+                width +
+                "x" +
+                height +
+                ", bpp: " +
+                bpp +
+                ", depth: " +
+                depth +
+                ", bigEndian: " +
+                bigEndian +
+                ", trueColor: " +
+                trueColor +
+                ", redMax: " +
+                redMax +
+                ", greenMax: " +
+                greenMax +
+                ", blueMax: " +
+                blueMax +
+                ", redShift: " +
+                redShift +
+                ", greenShift: " +
+                greenShift +
+                ", blueShift: " +
+                blueShift,
+        );
 
         // we're past the point where we could backtrack, so it's safe to call this
         this._setDesktopName(name);
         this._resize(width, height);
 
-        if (!this._viewOnly) { this._keyboard.grab(); }
+        if (!this._viewOnly) {
+            this._keyboard.grab();
+        }
 
         this._fbDepth = 24;
 
         if (this._fbName === "Intel(r) AMT KVM") {
-            Log.Warn("Intel AMT KVM only supports 8/16 bit depths. Using low color mode.");
+            Log.Warn(
+                "Intel AMT KVM only supports 8/16 bit depths. Using low color mode.",
+            );
             this._fbDepth = 8;
         }
 
         RFB.messages.pixelFormat(this._sock, this._fbDepth, true);
         this._sendEncodings();
-        RFB.messages.fbUpdateRequest(this._sock, false, 0, 0, this._fbWidth, this._fbHeight);
+        RFB.messages.fbUpdateRequest(
+            this._sock,
+            false,
+            0,
+            0,
+            this._fbWidth,
+            this._fbHeight,
+        );
 
-        this._updateConnectionState('connected');
+        this._updateConnectionState("connected");
         return true;
     }
 
@@ -2251,7 +2731,9 @@ export default class RFB extends EventTargetMixin {
 
         // Psuedo-encoding settings
         encs.push(encodings.pseudoEncodingQualityLevel0 + this._qualityLevel);
-        encs.push(encodings.pseudoEncodingCompressLevel0 + this._compressionLevel);
+        encs.push(
+            encodings.pseudoEncodingCompressLevel0 + this._compressionLevel,
+        );
 
         encs.push(encodings.pseudoEncodingDesktopSize);
         encs.push(encodings.pseudoEncodingLastRect);
@@ -2283,33 +2765,34 @@ export default class RFB extends EventTargetMixin {
      */
     _initMsg() {
         switch (this._rfbInitState) {
-            case 'ProtocolVersion':
+            case "ProtocolVersion":
                 return this._negotiateProtocolVersion();
 
-            case 'Security':
+            case "Security":
                 return this._negotiateSecurity();
 
-            case 'Authentication':
+            case "Authentication":
                 return this._negotiateAuthentication();
 
-            case 'SecurityResult':
+            case "SecurityResult":
                 return this._handleSecurityResult();
 
-            case 'SecurityReason':
+            case "SecurityReason":
                 return this._handleSecurityReason();
 
-            case 'ClientInitialisation':
+            case "ClientInitialisation":
                 this._sock.sQpush8(this._shared ? 1 : 0); // ClientInitialisation
                 this._sock.flush();
-                this._rfbInitState = 'ServerInitialisation';
+                this._rfbInitState = "ServerInitialisation";
                 return true;
 
-            case 'ServerInitialisation':
+            case "ServerInitialisation":
                 return this._negotiateServerInit();
 
             default:
-                return this._fail("Unknown init state (state: " +
-                                  this._rfbInitState + ")");
+                return this._fail(
+                    "Unknown init state (state: " + this._rfbInitState + ")",
+                );
         }
     }
 
@@ -2330,14 +2813,18 @@ export default class RFB extends EventTargetMixin {
     _handleServerCutText() {
         Log.Debug("ServerCutText");
 
-        if (this._sock.rQwait("ServerCutText header", 7, 1)) { return false; }
+        if (this._sock.rQwait("ServerCutText header", 7, 1)) {
+            return false;
+        }
 
-        this._sock.rQskipBytes(3);  // Padding
+        this._sock.rQskipBytes(3); // Padding
 
         let length = this._sock.rQshift32();
         length = toSigned32bit(length);
 
-        if (this._sock.rQwait("ServerCutText content", Math.abs(length), 8)) { return false; }
+        if (this._sock.rQwait("ServerCutText content", Math.abs(length), 8)) {
+            return false;
+        }
 
         if (length >= 0) {
             //Standard msg
@@ -2346,18 +2833,17 @@ export default class RFB extends EventTargetMixin {
                 return true;
             }
 
-            this.dispatchEvent(new CustomEvent(
-                "clipboard",
-                { detail: { text: text } }));
-
+            this.dispatchEvent(
+                new CustomEvent("clipboard", { detail: { text: text } }),
+            );
         } else {
             //Extended msg.
             length = Math.abs(length);
             const flags = this._sock.rQshift32();
-            let formats = flags & 0x0000FFFF;
-            let actions = flags & 0xFF000000;
+            let formats = flags & 0x0000ffff;
+            let actions = flags & 0xff000000;
 
-            let isCaps = (!!(actions & extendedClipboardActionCaps));
+            let isCaps = !!(actions & extendedClipboardActionCaps);
             if (isCaps) {
                 this._clipboardServerCapabilitiesFormats = {};
                 this._clipboardServerCapabilitiesActions = {};
@@ -2367,7 +2853,7 @@ export default class RFB extends EventTargetMixin {
                     let index = 1 << i;
 
                     // Check if format flag is set.
-                    if ((formats & index)) {
+                    if (formats & index) {
                         this._clipboardServerCapabilitiesFormats[index] = true;
                         // We don't send unsolicited clipboard, so we
                         // ignore the size
@@ -2378,7 +2864,9 @@ export default class RFB extends EventTargetMixin {
                 // Update our server capabilities for Actions
                 for (let i = 24; i <= 31; i++) {
                     let index = 1 << i;
-                    this._clipboardServerCapabilitiesActions[index] = !!(actions & index);
+                    this._clipboardServerCapabilitiesActions[index] = !!(
+                        actions & index
+                    );
                 }
 
                 /*  Caps handling done, send caps with the clients
@@ -2388,50 +2876,65 @@ export default class RFB extends EventTargetMixin {
                     extendedClipboardActionRequest,
                     extendedClipboardActionPeek,
                     extendedClipboardActionNotify,
-                    extendedClipboardActionProvide
+                    extendedClipboardActionProvide,
                 ];
-                RFB.messages.extendedClipboardCaps(this._sock, clientActions, {extendedClipboardFormatText: 0});
-
+                RFB.messages.extendedClipboardCaps(this._sock, clientActions, {
+                    extendedClipboardFormatText: 0,
+                });
             } else if (actions === extendedClipboardActionRequest) {
                 if (this._viewOnly) {
                     return true;
                 }
 
                 // Check if server has told us it can handle Provide and there is clipboard data to send.
-                if (this._clipboardText != null &&
-                    this._clipboardServerCapabilitiesActions[extendedClipboardActionProvide]) {
-
+                if (
+                    this._clipboardText != null &&
+                    this._clipboardServerCapabilitiesActions[
+                        extendedClipboardActionProvide
+                    ]
+                ) {
                     if (formats & extendedClipboardFormatText) {
-                        RFB.messages.extendedClipboardProvide(this._sock, [extendedClipboardFormatText], [this._clipboardText]);
+                        RFB.messages.extendedClipboardProvide(
+                            this._sock,
+                            [extendedClipboardFormatText],
+                            [this._clipboardText],
+                        );
                     }
                 }
-
             } else if (actions === extendedClipboardActionPeek) {
                 if (this._viewOnly) {
                     return true;
                 }
 
-                if (this._clipboardServerCapabilitiesActions[extendedClipboardActionNotify]) {
-
+                if (
+                    this._clipboardServerCapabilitiesActions[
+                        extendedClipboardActionNotify
+                    ]
+                ) {
                     if (this._clipboardText != null) {
-                        RFB.messages.extendedClipboardNotify(this._sock, [extendedClipboardFormatText]);
+                        RFB.messages.extendedClipboardNotify(this._sock, [
+                            extendedClipboardFormatText,
+                        ]);
                     } else {
                         RFB.messages.extendedClipboardNotify(this._sock, []);
                     }
                 }
-
             } else if (actions === extendedClipboardActionNotify) {
                 if (this._viewOnly) {
                     return true;
                 }
 
-                if (this._clipboardServerCapabilitiesActions[extendedClipboardActionRequest]) {
-
+                if (
+                    this._clipboardServerCapabilitiesActions[
+                        extendedClipboardActionRequest
+                    ]
+                ) {
                     if (formats & extendedClipboardFormatText) {
-                        RFB.messages.extendedClipboardRequest(this._sock, [extendedClipboardFormatText]);
+                        RFB.messages.extendedClipboardRequest(this._sock, [
+                            extendedClipboardFormatText,
+                        ]);
                     }
                 }
-
             } else if (actions === extendedClipboardActionProvide) {
                 if (this._viewOnly) {
                     return true;
@@ -2453,14 +2956,13 @@ export default class RFB extends EventTargetMixin {
                     let format = 1 << i;
 
                     if (formats & format) {
-
                         let size = 0x00;
                         let sizeArray = streamInflator.inflate(4);
 
-                        size |= (sizeArray[0] << 24);
-                        size |= (sizeArray[1] << 16);
-                        size |= (sizeArray[2] << 8);
-                        size |= (sizeArray[3]);
+                        size |= sizeArray[0] << 24;
+                        size |= sizeArray[1] << 16;
+                        size |= sizeArray[2] << 8;
+                        size |= sizeArray[3];
                         let chunk = streamInflator.inflate(size);
 
                         if (format === extendedClipboardFormatText) {
@@ -2478,30 +2980,42 @@ export default class RFB extends EventTargetMixin {
                     textData = tmpText;
 
                     textData = decodeUTF8(textData);
-                    if ((textData.length > 0) && "\0" === textData.charAt(textData.length - 1)) {
+                    if (
+                        textData.length > 0 &&
+                        "\0" === textData.charAt(textData.length - 1)
+                    ) {
                         textData = textData.slice(0, -1);
                     }
 
                     textData = textData.replaceAll("\r\n", "\n");
 
-                    this.dispatchEvent(new CustomEvent(
-                        "clipboard",
-                        { detail: { text: textData } }));
+                    this.dispatchEvent(
+                        new CustomEvent("clipboard", {
+                            detail: { text: textData },
+                        }),
+                    );
                 }
             } else {
-                return this._fail("Unexpected action in extended clipboard message: " + actions);
+                return this._fail(
+                    "Unexpected action in extended clipboard message: " +
+                        actions,
+                );
             }
         }
         return true;
     }
 
     _handleServerFenceMsg() {
-        if (this._sock.rQwait("ServerFence header", 8, 1)) { return false; }
+        if (this._sock.rQwait("ServerFence header", 8, 1)) {
+            return false;
+        }
         this._sock.rQskipBytes(3); // Padding
         let flags = this._sock.rQshift32();
         let length = this._sock.rQshift8();
 
-        if (this._sock.rQwait("ServerFence payload", length, 9)) { return false; }
+        if (this._sock.rQwait("ServerFence payload", length, 9)) {
+            return false;
+        }
 
         if (length > 64) {
             Log.Warn("Bad payload length (" + length + ") in fence response");
@@ -2521,13 +3035,13 @@ export default class RFB extends EventTargetMixin {
          *  (1<<31) - Request
          */
 
-        if (!(flags & (1<<31))) {
+        if (!(flags & (1 << 31))) {
             return this._fail("Unexpected fence response");
         }
 
         // Filter out unsupported flags
         // FIXME: support syncNext
-        flags &= (1<<0) | (1<<1);
+        flags &= (1 << 0) | (1 << 1);
 
         // BlockBefore and BlockAfter are automatically handled by
         // the fact that we process each incoming message
@@ -2538,18 +3052,22 @@ export default class RFB extends EventTargetMixin {
     }
 
     _handleXvpMsg() {
-        if (this._sock.rQwait("XVP version and message", 3, 1)) { return false; }
-        this._sock.rQskipBytes(1);  // Padding
+        if (this._sock.rQwait("XVP version and message", 3, 1)) {
+            return false;
+        }
+        this._sock.rQskipBytes(1); // Padding
         const xvpVer = this._sock.rQshift8();
         const xvpMsg = this._sock.rQshift8();
 
         switch (xvpMsg) {
-            case 0:  // XVP_FAIL
+            case 0: // XVP_FAIL
                 Log.Error("XVP operation failed");
                 break;
-            case 1:  // XVP_INIT
+            case 1: // XVP_INIT
                 this._rfbXvpVer = xvpVer;
-                Log.Info("XVP extensions enabled (version " + this._rfbXvpVer + ")");
+                Log.Info(
+                    "XVP extensions enabled (version " + this._rfbXvpVer + ")",
+                );
                 this._setCapability("power", true);
                 break;
             default:
@@ -2570,25 +3088,29 @@ export default class RFB extends EventTargetMixin {
 
         let first, ret;
         switch (msgType) {
-            case 0:  // FramebufferUpdate
+            case 0: // FramebufferUpdate
                 ret = this._framebufferUpdate();
                 if (ret && !this._enabledContinuousUpdates) {
-                    RFB.messages.fbUpdateRequest(this._sock, true, 0, 0,
-                                                 this._fbWidth, this._fbHeight);
+                    RFB.messages.fbUpdateRequest(
+                        this._sock,
+                        true,
+                        0,
+                        0,
+                        this._fbWidth,
+                        this._fbHeight,
+                    );
                 }
                 return ret;
 
-            case 1:  // SetColorMapEntries
+            case 1: // SetColorMapEntries
                 return this._handleSetColourMapMsg();
 
-            case 2:  // Bell
+            case 2: // Bell
                 Log.Debug("Bell");
-                this.dispatchEvent(new CustomEvent(
-                    "bell",
-                    { detail: {} }));
+                this.dispatchEvent(new CustomEvent("bell", { detail: {} }));
                 return true;
 
-            case 3:  // ServerCutText
+            case 3: // ServerCutText
                 return this._handleServerCutText();
 
             case 150: // EndOfContinuousUpdates
@@ -2608,41 +3130,46 @@ export default class RFB extends EventTargetMixin {
             case 248: // ServerFence
                 return this._handleServerFenceMsg();
 
-            case 250:  // XVP
+            case 250: // XVP
                 return this._handleXvpMsg();
 
             default:
                 this._fail("Unexpected server message (type " + msgType + ")");
-                Log.Debug("sock.rQpeekBytes(30): " + this._sock.rQpeekBytes(30));
+                Log.Debug(
+                    "sock.rQpeekBytes(30): " + this._sock.rQpeekBytes(30),
+                );
                 return true;
         }
     }
 
     _framebufferUpdate() {
         if (this._FBU.rects === 0) {
-            if (this._sock.rQwait("FBU header", 3, 1)) { return false; }
-            this._sock.rQskipBytes(1);  // Padding
+            if (this._sock.rQwait("FBU header", 3, 1)) {
+                return false;
+            }
+            this._sock.rQskipBytes(1); // Padding
             this._FBU.rects = this._sock.rQshift16();
 
             // Make sure the previous frame is fully rendered first
             // to avoid building up an excessive queue
             if (this._display.pending()) {
                 this._flushing = true;
-                this._display.flush()
-                    .then(() => {
-                        this._flushing = false;
-                        // Resume processing
-                        if (!this._sock.rQwait("message", 1)) {
-                            this._handleMessage();
-                        }
-                    });
+                this._display.flush().then(() => {
+                    this._flushing = false;
+                    // Resume processing
+                    if (!this._sock.rQwait("message", 1)) {
+                        this._handleMessage();
+                    }
+                });
                 return false;
             }
         }
 
         while (this._FBU.rects > 0) {
             if (this._FBU.encoding === null) {
-                if (this._sock.rQwait("rect header", 12)) { return false; }
+                if (this._sock.rQwait("rect header", 12)) {
+                    return false;
+                }
                 /* New FramebufferUpdate */
 
                 this._FBU.x = this._sock.rQshift16();
@@ -2664,7 +3191,7 @@ export default class RFB extends EventTargetMixin {
 
         this._display.flip();
 
-        return true;  // We finished this FBU
+        return true; // We finished this FBU
     }
 
     _handleRect() {
@@ -2706,8 +3233,8 @@ export default class RFB extends EventTargetMixin {
     }
 
     _handleVMwareCursor() {
-        const hotx = this._FBU.x;  // hotspot-x
-        const hoty = this._FBU.y;  // hotspot-y
+        const hotx = this._FBU.x; // hotspot-x
+        const hoty = this._FBU.y; // hotspot-y
         const w = this._FBU.width;
         const h = this._FBU.height;
         if (this._sock.rQwait("VMware cursor encoding", 1)) {
@@ -2728,91 +3255,93 @@ export default class RFB extends EventTargetMixin {
             const PIXEL_MASK = 0xffffff00 | 0;
             rgba = new Array(w * h * bytesPerPixel);
 
-            if (this._sock.rQwait("VMware cursor classic encoding",
-                                  (w * h * bytesPerPixel) * 2, 2)) {
+            if (
+                this._sock.rQwait(
+                    "VMware cursor classic encoding",
+                    w * h * bytesPerPixel * 2,
+                    2,
+                )
+            ) {
                 return false;
             }
 
             let andMask = new Array(w * h);
-            for (let pixel = 0; pixel < (w * h); pixel++) {
+            for (let pixel = 0; pixel < w * h; pixel++) {
                 andMask[pixel] = this._sock.rQshift32();
             }
 
             let xorMask = new Array(w * h);
-            for (let pixel = 0; pixel < (w * h); pixel++) {
+            for (let pixel = 0; pixel < w * h; pixel++) {
                 xorMask[pixel] = this._sock.rQshift32();
             }
 
-            for (let pixel = 0; pixel < (w * h); pixel++) {
+            for (let pixel = 0; pixel < w * h; pixel++) {
                 if (andMask[pixel] == 0) {
                     //Fully opaque pixel
                     let bgr = xorMask[pixel];
-                    let r   = bgr >> 8  & 0xff;
-                    let g   = bgr >> 16 & 0xff;
-                    let b   = bgr >> 24 & 0xff;
+                    let r = (bgr >> 8) & 0xff;
+                    let g = (bgr >> 16) & 0xff;
+                    let b = (bgr >> 24) & 0xff;
 
-                    rgba[(pixel * bytesPerPixel)     ] = r;    //r
-                    rgba[(pixel * bytesPerPixel) + 1 ] = g;    //g
-                    rgba[(pixel * bytesPerPixel) + 2 ] = b;    //b
-                    rgba[(pixel * bytesPerPixel) + 3 ] = 0xff; //a
-
-                } else if ((andMask[pixel] & PIXEL_MASK) ==
-                           PIXEL_MASK) {
+                    rgba[pixel * bytesPerPixel] = r; //r
+                    rgba[pixel * bytesPerPixel + 1] = g; //g
+                    rgba[pixel * bytesPerPixel + 2] = b; //b
+                    rgba[pixel * bytesPerPixel + 3] = 0xff; //a
+                } else if ((andMask[pixel] & PIXEL_MASK) == PIXEL_MASK) {
                     //Only screen value matters, no mouse colouring
                     if (xorMask[pixel] == 0) {
                         //Transparent pixel
-                        rgba[(pixel * bytesPerPixel)     ] = 0x00;
-                        rgba[(pixel * bytesPerPixel) + 1 ] = 0x00;
-                        rgba[(pixel * bytesPerPixel) + 2 ] = 0x00;
-                        rgba[(pixel * bytesPerPixel) + 3 ] = 0x00;
-
-                    } else if ((xorMask[pixel] & PIXEL_MASK) ==
-                               PIXEL_MASK) {
+                        rgba[pixel * bytesPerPixel] = 0x00;
+                        rgba[pixel * bytesPerPixel + 1] = 0x00;
+                        rgba[pixel * bytesPerPixel + 2] = 0x00;
+                        rgba[pixel * bytesPerPixel + 3] = 0x00;
+                    } else if ((xorMask[pixel] & PIXEL_MASK) == PIXEL_MASK) {
                         //Inverted pixel, not supported in browsers.
                         //Fully opaque instead.
-                        rgba[(pixel * bytesPerPixel)     ] = 0x00;
-                        rgba[(pixel * bytesPerPixel) + 1 ] = 0x00;
-                        rgba[(pixel * bytesPerPixel) + 2 ] = 0x00;
-                        rgba[(pixel * bytesPerPixel) + 3 ] = 0xff;
-
+                        rgba[pixel * bytesPerPixel] = 0x00;
+                        rgba[pixel * bytesPerPixel + 1] = 0x00;
+                        rgba[pixel * bytesPerPixel + 2] = 0x00;
+                        rgba[pixel * bytesPerPixel + 3] = 0xff;
                     } else {
                         //Unhandled xorMask
-                        rgba[(pixel * bytesPerPixel)     ] = 0x00;
-                        rgba[(pixel * bytesPerPixel) + 1 ] = 0x00;
-                        rgba[(pixel * bytesPerPixel) + 2 ] = 0x00;
-                        rgba[(pixel * bytesPerPixel) + 3 ] = 0xff;
+                        rgba[pixel * bytesPerPixel] = 0x00;
+                        rgba[pixel * bytesPerPixel + 1] = 0x00;
+                        rgba[pixel * bytesPerPixel + 2] = 0x00;
+                        rgba[pixel * bytesPerPixel + 3] = 0xff;
                     }
-
                 } else {
                     //Unhandled andMask
-                    rgba[(pixel * bytesPerPixel)     ] = 0x00;
-                    rgba[(pixel * bytesPerPixel) + 1 ] = 0x00;
-                    rgba[(pixel * bytesPerPixel) + 2 ] = 0x00;
-                    rgba[(pixel * bytesPerPixel) + 3 ] = 0xff;
+                    rgba[pixel * bytesPerPixel] = 0x00;
+                    rgba[pixel * bytesPerPixel + 1] = 0x00;
+                    rgba[pixel * bytesPerPixel + 2] = 0x00;
+                    rgba[pixel * bytesPerPixel + 3] = 0xff;
                 }
             }
 
-        //Alpha cursor.
+            //Alpha cursor.
         } else if (cursorType == 1) {
-            if (this._sock.rQwait("VMware cursor alpha encoding",
-                                  (w * h * 4), 2)) {
+            if (
+                this._sock.rQwait("VMware cursor alpha encoding", w * h * 4, 2)
+            ) {
                 return false;
             }
 
             rgba = new Array(w * h * bytesPerPixel);
 
-            for (let pixel = 0; pixel < (w * h); pixel++) {
+            for (let pixel = 0; pixel < w * h; pixel++) {
                 let data = this._sock.rQshift32();
 
-                rgba[(pixel * 4)     ] = data >> 24 & 0xff; //r
-                rgba[(pixel * 4) + 1 ] = data >> 16 & 0xff; //g
-                rgba[(pixel * 4) + 2 ] = data >> 8 & 0xff;  //b
-                rgba[(pixel * 4) + 3 ] = data & 0xff;       //a
+                rgba[pixel * 4] = (data >> 24) & 0xff; //r
+                rgba[pixel * 4 + 1] = (data >> 16) & 0xff; //g
+                rgba[pixel * 4 + 2] = (data >> 8) & 0xff; //b
+                rgba[pixel * 4 + 3] = data & 0xff; //a
             }
-
         } else {
-            Log.Warn("The given cursor type is not supported: "
-                      + cursorType + " given.");
+            Log.Warn(
+                "The given cursor type is not supported: " +
+                    cursorType +
+                    " given.",
+            );
             return false;
         }
 
@@ -2822,8 +3351,8 @@ export default class RFB extends EventTargetMixin {
     }
 
     _handleCursor() {
-        const hotx = this._FBU.x;  // hotspot-x
-        const hoty = this._FBU.y;  // hotspot-y
+        const hotx = this._FBU.x; // hotspot-x
+        const hoty = this._FBU.y; // hotspot-y
         const w = this._FBU.width;
         const h = this._FBU.height;
 
@@ -2845,7 +3374,7 @@ export default class RFB extends EventTargetMixin {
             for (let x = 0; x < w; x++) {
                 let maskIdx = y * Math.ceil(w / 8) + Math.floor(x / 8);
                 let alpha = (mask[maskIdx] << (x % 8)) & 0x80 ? 255 : 0;
-                rgba[pixIdx    ] = pixels[pixIdx + 2];
+                rgba[pixIdx] = pixels[pixIdx + 2];
                 rgba[pixIdx + 1] = pixels[pixIdx + 1];
                 rgba[pixIdx + 2] = pixels[pixIdx];
                 rgba[pixIdx + 3] = alpha;
@@ -2899,7 +3428,7 @@ export default class RFB extends EventTargetMixin {
 
         const numberOfScreens = this._sock.rQpeek8();
 
-        let bytes = 4 + (numberOfScreens * 16);
+        let bytes = 4 + numberOfScreens * 16;
         if (this._sock.rQwait("ExtendedDesktopSize", bytes)) {
             return false;
         }
@@ -2907,17 +3436,17 @@ export default class RFB extends EventTargetMixin {
         const firstUpdate = !this._supportsSetDesktopSize;
         this._supportsSetDesktopSize = true;
 
-        this._sock.rQskipBytes(1);  // number-of-screens
-        this._sock.rQskipBytes(3);  // padding
+        this._sock.rQskipBytes(1); // number-of-screens
+        this._sock.rQskipBytes(3); // padding
 
         for (let i = 0; i < numberOfScreens; i += 1) {
             // Save the id and flags of the first screen
             if (i === 0) {
-                this._screenID = this._sock.rQshift32();    // id
-                this._sock.rQskipBytes(2);                  // x-position
-                this._sock.rQskipBytes(2);                  // y-position
-                this._sock.rQskipBytes(2);                  // width
-                this._sock.rQskipBytes(2);                  // height
+                this._screenID = this._sock.rQshift32(); // id
+                this._sock.rQskipBytes(2); // x-position
+                this._sock.rQskipBytes(2); // y-position
+                this._sock.rQskipBytes(2); // width
+                this._sock.rQskipBytes(2); // height
                 this._screenFlags = this._sock.rQshift32(); // flags
             } else {
                 this._sock.rQskipBytes(16);
@@ -2954,8 +3483,7 @@ export default class RFB extends EventTargetMixin {
                     msg = "Unknown reason";
                     break;
             }
-            Log.Warn("Server did not accept the resize request: "
-                     + msg);
+            Log.Warn("Server did not accept the resize request: " + msg);
         } else {
             this._resize(this._FBU.width, this._FBU.height);
         }
@@ -2980,16 +3508,22 @@ export default class RFB extends EventTargetMixin {
     _handleDataRect() {
         let decoder = this._decoders[this._FBU.encoding];
         if (!decoder) {
-            this._fail("Unsupported encoding (encoding: " +
-                       this._FBU.encoding + ")");
+            this._fail(
+                "Unsupported encoding (encoding: " + this._FBU.encoding + ")",
+            );
             return false;
         }
 
         try {
-            return decoder.decodeRect(this._FBU.x, this._FBU.y,
-                                      this._FBU.width, this._FBU.height,
-                                      this._sock, this._display,
-                                      this._fbDepth);
+            return decoder.decodeRect(
+                this._FBU.x,
+                this._FBU.y,
+                this._FBU.width,
+                this._FBU.height,
+                this._sock,
+                this._display,
+                this._fbDepth,
+            );
         } catch (err) {
             this._fail("Error decoding rect: " + err);
             return false;
@@ -2997,10 +3531,18 @@ export default class RFB extends EventTargetMixin {
     }
 
     _updateContinuousUpdates() {
-        if (!this._enabledContinuousUpdates) { return; }
+        if (!this._enabledContinuousUpdates) {
+            return;
+        }
 
-        RFB.messages.enableContinuousUpdates(this._sock, true, 0, 0,
-                                             this._fbWidth, this._fbHeight);
+        RFB.messages.enableContinuousUpdates(
+            this._sock,
+            true,
+            0,
+            0,
+            this._fbWidth,
+            this._fbHeight,
+        );
     }
 
     // Handle resize-messages from the server
@@ -3021,7 +3563,9 @@ export default class RFB extends EventTargetMixin {
     }
 
     _xvpOp(ver, op) {
-        if (this._rfbXvpVer < ver) { return; }
+        if (this._rfbXvpVer < ver) {
+            return;
+        }
         Log.Info("Sending XVP operation " + op + " (version " + ver + ")");
         RFB.messages.xvpOp(this._sock, ver, op);
     }
@@ -3029,7 +3573,10 @@ export default class RFB extends EventTargetMixin {
     _updateCursor(rgba, hotx, hoty, w, h) {
         this._cursorImage = {
             rgbaPixels: rgba,
-            hotx: hotx, hoty: hoty, w: w, h: h,
+            hotx: hotx,
+            hoty: hoty,
+            w: w,
+            h: h,
         };
         this._refreshCursor();
     }
@@ -3057,21 +3604,33 @@ export default class RFB extends EventTargetMixin {
     }
 
     _refreshCursor() {
-        if (this._rfbConnectionState !== "connecting" &&
-            this._rfbConnectionState !== "connected") {
+        if (
+            this._rfbConnectionState !== "connecting" &&
+            this._rfbConnectionState !== "connected"
+        ) {
             return;
         }
-        const image = this._shouldShowDotCursor() ? RFB.cursors.dot : this._cursorImage;
-        this._cursor.change(image.rgbaPixels,
-                            image.hotx, image.hoty,
-                            image.w, image.h
+        const image = this._shouldShowDotCursor()
+            ? RFB.cursors.dot
+            : this._cursorImage;
+        this._cursor.change(
+            image.rgbaPixels,
+            image.hotx,
+            image.hoty,
+            image.w,
+            image.h,
         );
     }
 
     static genDES(password, challenge) {
-        const passwordChars = password.split('').map(c => c.charCodeAt(0));
+        const passwordChars = password.split("").map((c) => c.charCodeAt(0));
         const key = legacyCrypto.importKey(
-            "raw", passwordChars, { name: "DES-ECB" }, false, ["encrypt"]);
+            "raw",
+            passwordChars,
+            { name: "DES-ECB" },
+            false,
+            ["encrypt"],
+        );
         return legacyCrypto.encrypt({ name: "DES-ECB" }, key, challenge);
     }
 }
@@ -3091,8 +3650,8 @@ RFB.messages = {
 
     QEMUExtendedKeyEvent(sock, keysym, down, keycode) {
         function getRFBkeycode(xtScanCode) {
-            const upperByte = (keycode >> 8);
-            const lowerByte = (keycode & 0x00ff);
+            const upperByte = keycode >> 8;
+            const lowerByte = keycode & 0x00ff;
             if (upperByte === 0xe0 && lowerByte < 0x7f) {
                 return lowerByte | 0x80;
             }
@@ -3164,9 +3723,9 @@ RFB.messages = {
         }
 
         data[0] = actionFlag >> 24; // Actions
-        data[1] = 0x00;             // Reserved
-        data[2] = 0x00;             // Reserved
-        data[3] = formatFlag;       // Formats
+        data[1] = 0x00; // Reserved
+        data[2] = 0x00; // Reserved
+        data[3] = formatFlag; // Formats
 
         return data;
     },
@@ -3179,7 +3738,9 @@ RFB.messages = {
         for (let i = 0; i < formats.length; i++) {
             // We only support the format Text at this time
             if (formats[i] != extendedClipboardFormatText) {
-                throw new Error("Unsupported extended clipboard format for Provide message.");
+                throw new Error(
+                    "Unsupported extended clipboard format for Provide message.",
+                );
             }
 
             // Change lone \r or \n into \r\n as defined in rfbproto
@@ -3188,10 +3749,12 @@ RFB.messages = {
             // Check if it already has \0
             let text = encodeUTF8(inData[i] + "\0");
 
-            dataToDeflate.push( (text.length >> 24) & 0xFF,
-                                (text.length >> 16) & 0xFF,
-                                (text.length >>  8) & 0xFF,
-                                (text.length & 0xFF));
+            dataToDeflate.push(
+                (text.length >> 24) & 0xff,
+                (text.length >> 16) & 0xff,
+                (text.length >> 8) & 0xff,
+                text.length & 0xff,
+            );
 
             for (let j = 0; j < text.length; j++) {
                 dataToDeflate.push(text.charCodeAt(j));
@@ -3202,43 +3765,51 @@ RFB.messages = {
 
         // Build data  to send
         let data = new Uint8Array(4 + deflatedData.length);
-        data.set(RFB.messages._buildExtendedClipboardFlags([extendedClipboardActionProvide],
-                                                           formats));
+        data.set(
+            RFB.messages._buildExtendedClipboardFlags(
+                [extendedClipboardActionProvide],
+                formats,
+            ),
+        );
         data.set(deflatedData, 4);
 
         RFB.messages.clientCutText(sock, data, true);
     },
 
     extendedClipboardNotify(sock, formats) {
-        let flags = RFB.messages._buildExtendedClipboardFlags([extendedClipboardActionNotify],
-                                                              formats);
+        let flags = RFB.messages._buildExtendedClipboardFlags(
+            [extendedClipboardActionNotify],
+            formats,
+        );
         RFB.messages.clientCutText(sock, flags, true);
     },
 
     extendedClipboardRequest(sock, formats) {
-        let flags = RFB.messages._buildExtendedClipboardFlags([extendedClipboardActionRequest],
-                                                              formats);
+        let flags = RFB.messages._buildExtendedClipboardFlags(
+            [extendedClipboardActionRequest],
+            formats,
+        );
         RFB.messages.clientCutText(sock, flags, true);
     },
 
     extendedClipboardCaps(sock, actions, formats) {
         let formatKeys = Object.keys(formats);
-        let data  = new Uint8Array(4 + (4 * formatKeys.length));
+        let data = new Uint8Array(4 + 4 * formatKeys.length);
 
-        formatKeys.map(x => parseInt(x));
-        formatKeys.sort((a, b) =>  a - b);
+        formatKeys.map((x) => parseInt(x));
+        formatKeys.sort((a, b) => a - b);
 
         data.set(RFB.messages._buildExtendedClipboardFlags(actions, []));
 
         let loopOffset = 4;
         for (let i = 0; i < formatKeys.length; i++) {
-            data[loopOffset]     = formats[formatKeys[i]] >> 24;
+            data[loopOffset] = formats[formatKeys[i]] >> 24;
             data[loopOffset + 1] = formats[formatKeys[i]] >> 16;
             data[loopOffset + 2] = formats[formatKeys[i]] >> 8;
             data[loopOffset + 3] = formats[formatKeys[i]] >> 0;
 
             loopOffset += 4;
-            data[3] |= (1 << formatKeys[i]); // Update our format flags
+            data[3] |= 1 << formatKeys[i]; // Update our format flags
         }
 
         RFB.messages.clientCutText(sock, data, true);
@@ -3325,7 +3896,7 @@ RFB.messages = {
             bpp = 8;
         }
 
-        const bits = Math.floor(depth/3);
+        const bits = Math.floor(depth / 3);
 
         sock.sQpush8(0); // msg-type
 
@@ -3367,8 +3938,12 @@ RFB.messages = {
     },
 
     fbUpdateRequest(sock, incremental, x, y, w, h) {
-        if (typeof(x) === "undefined") { x = 0; }
-        if (typeof(y) === "undefined") { y = 0; }
+        if (typeof x === "undefined") {
+            x = 0;
+        }
+        if (typeof y === "undefined") {
+            y = 0;
+        }
 
         sock.sQpush8(3); // msg-type
 
@@ -3391,25 +3966,29 @@ RFB.messages = {
         sock.sQpush8(op);
 
         sock.flush();
-    }
+    },
 };
 
 RFB.cursors = {
     none: {
         rgbaPixels: new Uint8Array(),
-        w: 0, h: 0,
-        hotx: 0, hoty: 0,
+        w: 0,
+        h: 0,
+        hotx: 0,
+        hoty: 0,
     },
 
     dot: {
         /* eslint-disable indent */
         rgbaPixels: new Uint8Array([
-            255, 255, 255, 255,   0,   0,   0, 255, 255, 255, 255, 255,
-              0,   0,   0, 255,   0,   0,   0,   0,   0,   0,  0,  255,
-            255, 255, 255, 255,   0,   0,   0, 255, 255, 255, 255, 255,
+            255, 255, 255, 255, 0, 0, 0, 255, 255, 255, 255, 255, 0, 0, 0, 255,
+            0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 255, 0, 0, 0, 255, 255,
+            255, 255, 255,
         ]),
         /* eslint-enable indent */
-        w: 3, h: 3,
-        hotx: 1, hoty: 1,
-    }
+        w: 3,
+        h: 3,
+        hotx: 1,
+        hoty: 1,
+    },
 };
