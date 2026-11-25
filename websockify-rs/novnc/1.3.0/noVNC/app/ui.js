@@ -1027,6 +1027,7 @@ const UI = {
         UI.rfb = new RFB(document.getElementById('noVNC_container'), url,
                          { shared: UI.getSetting('shared'),
                            repeaterID: UI.getSetting('repeaterID'),
+                           nativeRaw: new URLSearchParams(window.location.search).get('native_raw') === 'true',
                            credentials: { password: password } });
         UI.rfb.addEventListener("connect", UI.connectFinished);
         UI.rfb.addEventListener("disconnect", UI.disconnectFinished);

@@ -66,7 +66,14 @@ impl IntoResponse for StaticFile {
         match embedded_file(self.version, &self.path) {
             Some(content) => {
                 let mime = mime_guess::from_path(&self.path).first_or_octet_stream();
-                ([(header::CONTENT_TYPE, mime.as_ref())], content.data).into_response()
+                (
+                    [
+                        (header::CONTENT_TYPE, mime.as_ref()),
+                        (header::CACHE_CONTROL, "no-store"),
+                    ],
+                    content.data,
+                )
+                    .into_response()
             }
             None => (StatusCode::NOT_FOUND, "404 Not Found").into_response(),
         }
@@ -112,6 +119,8 @@ struct Cli {
 }
 
 fn create_app(upstream: axum_websockify::Destination, novnc: NoVncVersion) -> Router {
+    let websockify = axum_websockify::create_router(upstream);
+
     Router::<NoVncVersion>::new()
         .route("/static/{*wildcard}", get(static_handler))
         .route(
@@ -123,7 +132,10 @@ fn create_app(upstream: axum_websockify::Destination, novnc: NoVncVersion) -> Ro
             get(|| async { Redirect::permanent("/static/vnc.html") }),
         )
         .with_state(novnc)
-        .nest("/websockify", axum_websockify::create_router(upstream))
+        // noVNC's vnc.html uses the relative path "websockify". Served from
+        // /static/vnc.html, browsers resolve that to /static/websockify.
+        .nest("/static/websockify", websockify.clone())
+        .nest("/websockify", websockify)
         .layer(TraceLayer::new_for_http())
 }
 
@@ -298,10 +310,31 @@ mod tests {
                 "text/html",
                 "noVNC {directory}"
             );
+            assert_eq!(
+                headers.get(header::CACHE_CONTROL).unwrap(),
+                "no-store",
+                "version assets must not be cached across --novnc switches"
+            );
             let expected = std::fs::read(format!("novnc/{directory}/noVNC/vnc_lite.html"))
                 .expect("reference asset should exist on disk");
             assert_eq!(body, expected, "served asset must match noVNC {directory}");
         }
+    }
+
+    #[tokio::test]
+    async fn ui_relative_websocket_path_is_routed() {
+        // vnc.html lives at /static/vnc.html and resolves "websockify"
+        // relative to itself, so the UI connects to /static/websockify.
+        let app = create_app(
+            axum_websockify::Destination::Tcp(Vec::new()),
+            NoVncVersion::V1_7_0,
+        );
+        let (ui_status, _, _) = request(app.clone(), "/static/websockify").await;
+        let (canonical_status, _, _) = request(app, "/websockify").await;
+
+        assert_eq!(ui_status, StatusCode::BAD_REQUEST);
+        assert_eq!(canonical_status, StatusCode::BAD_REQUEST);
+        assert_ne!(ui_status, StatusCode::NOT_FOUND);
     }
 
     #[tokio::test]

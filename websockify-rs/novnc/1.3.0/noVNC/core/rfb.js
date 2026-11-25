@@ -89,6 +89,7 @@ export default class RFB extends EventTargetMixin {
         // Connection details
         options = options || {};
         this._rfbCredentials = options.credentials || {};
+        this._nativeRawRequested = options.nativeRaw === true;
         this._shared = 'shared' in options ? !!options.shared : true;
         this._repeaterID = options.repeaterID || '';
         this._wsProtocols = options.wsProtocols || [];
@@ -101,6 +102,7 @@ export default class RFB extends EventTargetMixin {
 
         // Server capabilities
         this._rfbVersion = 0;
+        this._nativeRaw = false;
         this._rfbMaxVersion = 3.8;
         this._rfbTightVNC = false;
         this._rfbVeNCryptState = 0;
@@ -1748,15 +1750,26 @@ export default class RFB extends EventTargetMixin {
 
         if (!this._viewOnly) { this._keyboard.grab(); }
 
-        this._fbDepth = 24;
+        // Only opt in for the supported legacy profile; other servers negotiate normally.
+        // In native Raw mode, request pixels without either setup message.
+        this._nativeRaw = this._nativeRawRequested &&
+            this._rfbVersion === 3.3 && !this._rfbTightVNC &&
+            name === "rfb" && bpp === 16 && depth === 16 &&
+            bigEndian === 0 && trueColor !== 0 &&
+            redMax === 31 && greenMax === 63 && blueMax === 31 &&
+            redShift === 11 && greenShift === 5 && blueShift === 0;
+
+        this._fbDepth = this._nativeRaw ? 16 : 24;
 
         if (this._fbName === "Intel(r) AMT KVM") {
             Log.Warn("Intel AMT KVM only supports 8/16 bit depths. Using low color mode.");
             this._fbDepth = 8;
         }
 
-        RFB.messages.pixelFormat(this._sock, this._fbDepth, true);
-        this._sendEncodings();
+        if (!this._nativeRaw) {
+            RFB.messages.pixelFormat(this._sock, this._fbDepth, true);
+            this._sendEncodings();
+        }
         RFB.messages.fbUpdateRequest(this._sock, false, 0, 0, this._fbWidth, this._fbHeight);
 
         this._updateConnectionState('connected');
@@ -1764,6 +1777,9 @@ export default class RFB extends EventTargetMixin {
     }
 
     _sendEncodings() {
+        // Quality/compression changes must not send SetEncodings in this mode either.
+        if (this._nativeRaw) { return; }
+
         const encs = [];
 
         // In preference order

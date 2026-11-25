@@ -116,6 +116,7 @@ export default class RFB extends EventTargetMixin {
         // Connection details
         options = options || {};
         this._rfbCredentials = options.credentials || {};
+        this._nativeRawRequested = options.nativeRaw === true;
         this._shared = "shared" in options ? !!options.shared : true;
         this._repeaterID = options.repeaterID || "";
         this._wsProtocols = options.wsProtocols || [];
@@ -129,6 +130,7 @@ export default class RFB extends EventTargetMixin {
 
         // Server capabilities
         this._rfbVersion = 0;
+        this._nativeRaw = false;
         this._rfbMaxVersion = 3.8;
         this._rfbTightVNC = false;
         this._rfbVeNCryptState = 0;
@@ -2685,6 +2687,27 @@ export default class RFB extends EventTargetMixin {
             this._keyboard.grab();
         }
 
+        // Only opt in for the supported legacy profile; other servers negotiate normally.
+        // In native Raw mode, request pixels without either setup message.
+        this._nativeRaw = this._nativeRawRequested &&
+            this._rfbVersion === 3.3 && !this._rfbTightVNC &&
+            name === "rfb" && bpp === 16 && depth === 16 &&
+            bigEndian === 0 && trueColor !== 0 &&
+            redMax === 31 && greenMax === 63 && blueMax === 31 &&
+            redShift === 11 && greenShift === 5 && blueShift === 0;
+
+        this._serverPixelFormat = {
+            bpp,
+            depth,
+            bigEndian,
+            trueColor,
+            redMax,
+            greenMax,
+            blueMax,
+            redShift,
+            greenShift,
+            blueShift,
+        };
         this._fbDepth = 24;
 
         if (this._fbName === "Intel(r) AMT KVM") {
@@ -2692,10 +2715,22 @@ export default class RFB extends EventTargetMixin {
                 "Intel AMT KVM only supports 8/16 bit depths. Using low color mode.",
             );
             this._fbDepth = 8;
+        } else if (bpp === 16 && trueColor !== 0) {
+            // Use the server's native 16bpp format instead of forcing 32bpp.
+            this._fbDepth = 16;
         }
 
-        RFB.messages.pixelFormat(this._sock, this._fbDepth, true);
-        this._sendEncodings();
+        if (!this._nativeRaw) {
+            if (this._fbDepth === 16) {
+                RFB.messages.pixelFormatNative(
+                    this._sock,
+                    this._serverPixelFormat,
+                );
+            } else {
+                RFB.messages.pixelFormat(this._sock, this._fbDepth, true);
+            }
+            this._sendEncodings();
+        }
         RFB.messages.fbUpdateRequest(
             this._sock,
             false,
@@ -2710,6 +2745,9 @@ export default class RFB extends EventTargetMixin {
     }
 
     _sendEncodings() {
+        // Quality/compression changes must not send SetEncodings in this mode either.
+        if (this._nativeRaw) { return; }
+
         const encs = [];
 
         // In preference order
@@ -3523,6 +3561,7 @@ export default class RFB extends EventTargetMixin {
                 this._sock,
                 this._display,
                 this._fbDepth,
+                this._serverPixelFormat,
             );
         } catch (err) {
             this._fail("Error decoding rect: " + err);
@@ -3916,6 +3955,33 @@ RFB.messages = {
         sock.sQpush8(bits * 0); // red-shift
         sock.sQpush8(bits * 1); // green-shift
         sock.sQpush8(bits * 2); // blue-shift
+
+        sock.sQpush8(0); // padding
+        sock.sQpush8(0); // padding
+        sock.sQpush8(0); // padding
+
+        sock.flush();
+    },
+
+    pixelFormatNative(sock, pf) {
+        sock.sQpush8(0); // msg-type
+
+        sock.sQpush8(0); // padding
+        sock.sQpush8(0); // padding
+        sock.sQpush8(0); // padding
+
+        sock.sQpush8(pf.bpp);
+        sock.sQpush8(pf.depth);
+        sock.sQpush8(pf.bigEndian);
+        sock.sQpush8(pf.trueColor);
+
+        sock.sQpush16(pf.redMax);
+        sock.sQpush16(pf.greenMax);
+        sock.sQpush16(pf.blueMax);
+
+        sock.sQpush8(pf.redShift);
+        sock.sQpush8(pf.greenShift);
+        sock.sQpush8(pf.blueShift);
 
         sock.sQpush8(0); // padding
         sock.sQpush8(0); // padding

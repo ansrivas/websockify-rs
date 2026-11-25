@@ -1077,6 +1077,7 @@ const UI = {
                              url.href,
                              { shared: UI.getSetting('shared'),
                                repeaterID: UI.getSetting('repeaterID'),
+                               nativeRaw: new URLSearchParams(window.location.search).get('native_raw') === 'true',
                                credentials: { password: password } });
         } catch (exc) {
             Log.Error("Failed to connect to server: " + exc);

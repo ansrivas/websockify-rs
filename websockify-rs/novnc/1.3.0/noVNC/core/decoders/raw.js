@@ -21,7 +21,7 @@ export default class RawDecoder {
             this._lines = height;
         }
 
-        const pixelSize = depth == 8 ? 1 : 4;
+        const pixelSize = depth === 16 ? 2 : (depth === 8 ? 1 : 4);
         const bytesPerLine = width * pixelSize;
 
         if (sock.rQwait("RAW", bytesPerLine)) {
@@ -47,11 +47,23 @@ export default class RawDecoder {
             }
             data = newdata;
             index = 0;
+        } else if (depth === 16) {
+            // Native little-endian RGB565, expanded to canvas RGBA.
+            const rgba = new Uint8Array(pixels * 4);
+            for (let i = 0; i < pixels; i++) {
+                const offset = index + i * 2;
+                const pixel = data[offset] | (data[offset + 1] << 8);
+                rgba[i * 4] = (pixel >> 11) * 255 / 31;
+                rgba[i * 4 + 1] = ((pixel >> 5) & 63) * 255 / 63;
+                rgba[i * 4 + 2] = (pixel & 31) * 255 / 31;
+            }
+            data = rgba;
+            index = 0;
         }
 
-        // Max sure the image is fully opaque
+        // Make sure the image is fully opaque, starting at the rectangle's offset.
         for (let i = 0; i < pixels; i++) {
-            data[i * 4 + 3] = 255;
+            data[index + i * 4 + 3] = 255;
         }
 
         display.blitImage(x, curY, width, currHeight, data, index);
